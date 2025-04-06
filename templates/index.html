@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="{{ url_for('static', filename='scripts.js') }}"></script>
+    <title>Story Arc - Game Generator</title>
+</head>
+<body>
+    <div class="lines">
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+    </div>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-dark">
+        <a class="navbar-brand text-light" href="#">Story Arc</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link text-light" href="#">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-light" href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h1 class="text-center">Generate Your Unity Game</h1>
+
+        <div id="stage1" class="mt-4">
+            <h2>Step 1: Enter Your Story Prompt</h2>
+            <div class="form-group">
+                <label for="storyPrompt">Story Prompt:</label>
+                <textarea class="form-control" id="storyPrompt" rows="4" placeholder="Enter your story idea..."></textarea>
+            </div>
+            <button class="btn btn-primary btn-block" id="generateCharacters">Generate Characters</button>
+        </div>
+
+        <div id="stage2" class="mt-4" style="display:none;">
+            <h2>Step 2: Generated Characters</h2>
+            <div id="charactersList" class="row"></div>
+            <button class="btn btn-success btn-block" id="generateGame" style="display:none;">Generate Game</button>
+        </div>
+
+        <div id="stage3" class="mt-4" style="display:none;">
+            <h2>Step 3: Game Generation</h2>
+            <p>Your game is being generated...</p>
+        </div>
+    </div>
+</body>
+</html>
