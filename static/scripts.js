@@ -25,7 +25,6 @@ $(document).ready(function () {
 });
 
 function extractCharacters(storyPrompt) {
-    // Example logic - replace with your character extraction logic
     return [
         { name: "Character 1", prompt: "A brave knight with shining armor." },
         { name: "Character 2", prompt: "A cunning rogue with a mysterious past." },
@@ -48,6 +47,7 @@ function displayCharacters(characters) {
                         <button class="btn btn-primary generateSprite" data-prompt="${character.prompt}">Generate Sprite</button>
                         <button class="btn btn-success regenerateSprite" style="display:none;">Regenerate Sprite</button>
                         <img src="" alt="${character.name} sprite" style="display:none; width: 150px; height: 150px;" class="sprite-image">
+                        <i class="fa-solid fa-spinner loading-icon" style="display:none; font-size: 24px; color: #00ADB5;"></i>
                     </div>
                 </div>
             </div>
@@ -58,7 +58,6 @@ function displayCharacters(characters) {
     // Generate sprite button click event
     $('.generateSprite').click(function () {
         const prompt = $(this).data('prompt');
-        const characterName = $(this).parent().find('h5').text();
         generateSprite(this, prompt);
     });
 
@@ -73,6 +72,9 @@ function displayCharacters(characters) {
 
 // Function to handle sprite generation
 function generateSprite(button, prompt) {
+    const loadingIcon = $(button).siblings('.loading-icon');
+    loadingIcon.show().addClass('fa-spin'); // Show and spin the loading icon
+
     // Call the API to generate the image
     fetch('/generate_image', {
         method: 'POST',
@@ -88,6 +90,7 @@ function generateSprite(button, prompt) {
         return response.json();
     })
     .then(data => {
+        loadingIcon.hide().removeClass('fa-spin'); // Hide and stop spinning the loading icon
         if (data.imageUrl) {
             const spriteImage = $(button).siblings('.sprite-image');
             spriteImage.attr('src', data.imageUrl).show();
@@ -100,6 +103,7 @@ function generateSprite(button, prompt) {
         }
     })
     .catch(error => {
+        loadingIcon.hide().removeClass('fa-spin'); // Hide and stop spinning the loading icon on error
         console.error('Error:', error);
         alert('An error occurred while generating the image: ' + error.message);
     });

@@ -17,7 +17,7 @@ body {
     line-height: 1.6;
     position: relative;
     font-family: sans-serif;
-    overflow: hidden;
+    overflow: auto;
 }
 
 .lines {
@@ -65,6 +65,35 @@ body {
 .line:nth-child(8)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #00FA9A 75%, #00FA9A 100%); animation-delay: 4s; }
 .line:nth-child(9)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #FF1493 75%, #FF1493 100%); animation-delay: 4.5s; }
 .line:nth-child(10)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #00BFFF 75%, #00BFFF 100%); animation-delay: 5s; }
+
+.scrollable {
+    width: 80vw;        /* 80% of the viewport width */
+    height: 60vh;       /* 60% of the viewport height */
+    overflow-y: auto;   /* Enable vertical scrolling only */
+    overflow-x: hidden; /* Disable horizontal scrolling */
+    /* border: 1px solid #ccc; Add a border for visibility */
+    padding: 10px;      /* Add some padding */
+    /* box-sizing: border-box; Include padding and border in width/height */
+}
+
+/* Custom scrollbar styles */
+.scrollable::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+.scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Background of the track */
+    border-radius: 10px; /* Round edges */
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scrollbar thumb */
+    border-radius: 10px; /* Round edges */
+}
+
+.scrollable::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color when hovered */
+}
 
 @keyframes drop {
     0% { top: -50%; }
