@@ -35,76 +35,136 @@ $(document).ready(function () {
     });
 });
 
-// Placeholder function
 function extractStoryGraph(prompt) {
-    // Replace this with your real graph extraction logic
     return {
         nodes: [
-            { id: 'Start', label: 'Start of the Story' },
-            { id: 'Conflict', label: 'Main Conflict' },
-            { id: 'Climax', label: 'Climax' },
-            { id: 'Resolution', label: 'Resolution' }
+            { id: 'Start', label: 'The Beginning: A Quiet Village' },
+            { id: 'CallToAdventure', label: 'Call to Adventure' },
+            { id: 'Refusal', label: 'Refusal of the Call' },
+            { id: 'Mentor', label: 'Meeting the Mentor' },
+            { id: 'FirstThreshold', label: 'Crossing the First Threshold' },
+            { id: 'Tests', label: 'Trials and Tests' },
+            { id: 'Allies', label: 'Gaining Allies' },
+            { id: 'Enemies', label: 'Facing Enemies' },
+            { id: 'InnerConflict', label: 'Inner Conflict and Doubt' },
+            { id: 'MajorTwist', label: 'Major Plot Twist' },
+            { id: 'Climax', label: 'Final Showdown' },
+            { id: 'Sacrifice', label: 'The Sacrifice' },
+            { id: 'Resolution', label: 'Return Home Changed' },
+            { id: 'SecretEnding', label: 'Secret Ending (Optional)' },
+            { id: 'SideQuest1', label: 'Side Quest: The Lost Artifact' },
+            { id: 'SideQuest2', label: 'Side Quest: Help the Villagers' }
         ],
         edges: [
-            { source: 'Start', target: 'Conflict', label: 'leads to' },
-            { source: 'Conflict', target: 'Climax', label: 'escalates to' },
-            { source: 'Climax', target: 'Resolution', label: 'resolves as' }
+            { source: 'Start', target: 'CallToAdventure', label: 'disrupted by' },
+            { source: 'CallToAdventure', target: 'Refusal', label: 'causes hesitation' },
+            { source: 'Refusal', target: 'Mentor', label: 'resolved by guidance' },
+            { source: 'Mentor', target: 'FirstThreshold', label: 'leads to action' },
+            { source: 'FirstThreshold', target: 'Tests', label: 'opens path to' },
+            { source: 'Tests', target: 'Allies', label: 'results in bonds' },
+            { source: 'Tests', target: 'Enemies', label: 'reveals opposition' },
+            { source: 'Enemies', target: 'InnerConflict', label: 'provokes doubt' },
+            { source: 'Allies', target: 'InnerConflict', label: 'bring hope' },
+            { source: 'InnerConflict', target: 'MajorTwist', label: 'triggers' },
+            { source: 'MajorTwist', target: 'Climax', label: 'builds to' },
+            { source: 'Climax', target: 'Sacrifice', label: 'demands' },
+            { source: 'Sacrifice', target: 'Resolution', label: 'results in' },
+            { source: 'Resolution', target: 'SecretEnding', label: 'unlocks (if conditions met)' },
+            { source: 'FirstThreshold', target: 'SideQuest1', label: 'optional path' },
+            { source: 'Tests', target: 'SideQuest2', label: 'optional help' },
+            { source: 'SideQuest1', target: 'MajorTwist', label: 'influences' },
+            { source: 'SideQuest2', target: 'Allies', label: 'gains trust' }
         ]
     };
 }
 
+
 // D3 force-directed graph
 function visualizeGraph(nodes, links) {
-    $('#graphContainer').empty(); // Clear any previous graph
-
-    const svg = d3.select("#graphContainer")
-        .append("svg")
-        .attr("width", "100%")
-        .attr("height", 500);
+    $('#graphContainer').empty(); // Clear previous graph
 
     const width = $('#graphContainer').width();
     const height = 500;
+
+    const svg = d3.select("#graphContainer")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("background-color", "#222831");
+
+    const zoomLayer = svg.append("g"); // A container for zoomable content
+
+    const zoom = d3.zoom()
+        .scaleExtent([0.3, 3]) // min & max zoom levels
+        .on("zoom", (event) => {
+            zoomLayer.attr("transform", event.transform);
+        });
+
+    svg.call(zoom); // enable zooming on SVG
+
+    // Define arrow marker
+    svg.append("defs").append("marker")
+        .attr("id", "arrow")
+        .attr("viewBox", "0 -5 10 10")
+        .attr("refX", 20) // how far arrow is from the node center
+        .attr("refY", 0)
+        .attr("markerWidth", 6)
+        .attr("markerHeight", 6)
+        .attr("orient", "auto")
+        .attr("fill", "#EEEEEE")
+        .append("path")
+        .attr("d", "M0,-5L10,0L0,5");
 
     const simulation = d3.forceSimulation(nodes)
         .force("link", d3.forceLink(links).id(d => d.id).distance(150))
         .force("charge", d3.forceManyBody().strength(-300))
         .force("center", d3.forceCenter(width / 2, height / 2));
 
-    const link = svg.append("g")
-        .attr("stroke", "#aaa")
+    const link = zoomLayer.append("g")
+        .attr("stroke", "#393E46")
+        .attr("stroke-width", 2)
         .selectAll("line")
         .data(links)
         .enter()
-        .append("line");
+        .append("line")
+        .attr("marker-end", "url(#arrow)"); // Add arrow to edge
 
-    const edgeLabels = svg.append("g")
+    const edgeLabels = zoomLayer.append("g")
         .selectAll("text")
         .data(links)
         .enter()
         .append("text")
         .text(d => d.label)
         .attr("font-size", "10px")
-        .attr("fill", "#555");
+        .attr("fill", "#EEEEEE")
+        .style("user-select", "none")
+        .style("-webkit-user-select", "none")
+        .style("-moz-user-select", "none")
+        .style("-ms-user-select", "none");
 
-    const node = svg.append("g")
+    const node = zoomLayer.append("g")
         .selectAll("circle")
         .data(nodes)
         .enter()
         .append("circle")
         .attr("r", 15)
-        .attr("fill", "#007BFF")
+        .attr("fill", "#00ADB5")
         .call(drag(simulation));
 
-    const labels = svg.append("g")
+    const labels = zoomLayer.append("g")
         .selectAll("text")
         .data(nodes)
         .enter()
         .append("text")
         .text(d => d.label)
         .attr("font-size", "12px")
-        .attr("fill", "#fff")
+        .attr("fill", "#EEEEEE")
         .attr("text-anchor", "middle")
-        .attr("dy", 4);
+        .style("pointer-events", "none")
+        .style("user-select", "none")
+        .style("-webkit-user-select", "none")
+        .style("-moz-user-select", "none")
+        .style("-ms-user-select", "none");
 
     simulation.on("tick", () => {
         link
@@ -115,7 +175,7 @@ function visualizeGraph(nodes, links) {
 
         edgeLabels
             .attr("x", d => (d.source.x + d.target.x) / 2)
-            .attr("y", d => (d.source.y + d.target.y) / 2);
+            .attr("y", d => (d.source.y + d.target.y) / 2 - 5);
 
         node
             .attr("cx", d => d.x)
@@ -126,6 +186,9 @@ function visualizeGraph(nodes, links) {
             .attr("y", d => d.y);
     });
 }
+
+
+
 
 function drag(simulation) {
     function dragstarted(event, d) {
