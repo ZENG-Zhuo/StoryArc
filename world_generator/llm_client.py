@@ -158,7 +158,6 @@ class GPTClient:
         # print(response) # Optional: print the raw response object
         return response.content # Assuming you want the text content
 
-    # def generate_entity(self, story):
     def gen_entity(self, story_node):
         '''A method for generating an entity
         The output will be node with entity
@@ -172,15 +171,13 @@ class GPTClient:
         # print(response) # Optional: print the raw response object
         return response.content # Assuming you want the text content
 
-    # def gen_node_with_entity(self, story_description, story_arc, num_endings):
-    #     '''A method for generating a story node with an entity.
-    #     Major function that will be used by frontend
-    #     '''
-    #     # TODO:
-    #     # - verify the response is in JSON
-    #     story_node = self.gen_story_node(story_description, story_arc, num_endings)
-    #     entity = self.gen_entity(story_node)
-    #     return entity
+    def dummy_gen_story_node(self, story_description, story_arc, num_endings):
+        '''A dummy method for generating a story node. For integration testing'''
+        pass
+
+    def dummy_gen_entity(self, story_node):
+        '''A dummy method for generating an entity. For integration testing'''
+        pass
 
 if __name__ == '__main__':
     # print("phase 1")
