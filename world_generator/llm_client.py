@@ -3,11 +3,14 @@
 import os
 from pathlib import Path
 # from openai import OpenAI
-# from openai.types import OpenAIError, APIConnectionError, RateLimitError, AuthenticationError, BadRequestError
+# from openai.types import OpenAIError,\
+#  APIConnectionError, RateLimitError, AuthenticationError, BadRequestError
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
-from portkey_ai import createHeaders, PORTKEY_GATEWAY_URL
+# from langchain_core.messages.chat import ChatMessage
 from langchain_core.prompts import ChatPromptTemplate
+
+from portkey_ai import createHeaders
 
 
 
@@ -47,12 +50,16 @@ class GPTClient:
     def __init__(self):
         self.formatter = Formatter()
 
+        # config = {
+        #     "virtual_key": os.getenv('VIRTUAL_KEY')
+        # }
         portkey_headers = createHeaders(
             api_key=os.getenv('PORTKEY_API_KEY'),
             virtual_key=os.getenv('VIRTUAL_KEY')
+            # config = config 
         )
         self.client = ChatOpenAI(
-            base_url=PORTKEY_GATEWAY_URL,
+            base_url=os.getenv('BASE_URL'),
             default_headers=portkey_headers,
             api_key='X',
             # temperature = 1.0,
@@ -69,58 +76,6 @@ class GPTClient:
         self.story_chain = self._init_chain('gen_story')
         self.entity_chain = self._init_chain('gen_entity')
 
-        # self.client = OpenAI(
-        #     api_key=os.getenv('OPENAI_API_KEY'),
-        #     organization=os.getenv('OPENAI_ORG_ID'),
-        #     project=os.getenv('PORTKEY_PROJECT_ID'),
-        #     base_url=PORTKEY_GATEWAY_URL,
-        #     default_headers=createHeaders(
-        #         provider="openai",
-        #         api_key=os.getenv('PORTKEY_API_KEY')
-        #     )
-        # )
-
-
-    # def _single_send(self, user_prompt, system_prompt=None, temperature=1.0):
-    #     '''A method for sending a single message to the GPT API'''
-
-    #     formatted_message = []
-    #     if system_prompt:
-    #         formatted_message.append(self.formatter.sys_msg(system_prompt))
-    #     formatted_message.append(self.formatter.user_msg(user_prompt))
-    #     chat_complete = None
-    #     try:
-    #         chat_complete = self.client.chat.completions.create(
-    #             model="gpt-4o",
-    #             messages=formatted_message,
-    #             temperature=temperature, # TODO: might need to adjust this
-    #         )
-    #     except RateLimitError as e:
-    #         print("Rate limit exceeded. Please slow down or retry later.")
-    #         print(e)
-
-    #     except APIConnectionError as e:
-    #         print("Network error: could not reach OpenAI servers.")
-    #         print(e)
-
-    #     except AuthenticationError as e:
-    #         print("Invalid API key or authentication issue.")
-    #         print(e)
-
-    #     except BadRequestError as e:
-    #         print("Bad request. Check your parameters or message format.")
-    #         print(e)
-
-    #     except OpenAIError as e:
-    #         # Catch-all for other OpenAI-related errors
-    #         print("An OpenAI error occurred.")
-    #         print(e)
-    #     if not chat_complete:
-    #         return None
-    #     response = chat_complete.choices[0].message.content
-    #     print(response)
-    #     return response
-
     def _load_prompt(self, prompt_name):
         '''Load prompt from file'''
         prompt_path = self.prompts_dir / f"{prompt_name}.txt"
@@ -135,8 +90,8 @@ class GPTClient:
         # return self._single_send(user_prompt, system_prompt)
         system_prompt = self._load_prompt(f'sys/{prompt_name}')
         user_prompt_template = self._load_prompt(f'user/{prompt_name}')
-        print(f"system_prompt is {system_prompt}\n\n===========\n")
-        print(f"user_prompt_template is {user_prompt_template}\n\n===========\n")
+        # print(f"system_prompt is {system_prompt}\n\n===========\n")
+        # print(f"user_prompt_template is {user_prompt_template}\n\n===========\n")
         prompt = ChatPromptTemplate.from_messages([
             self.formatter.sys_msg(system_prompt),
             self.formatter.user_msg(user_prompt_template)
@@ -144,7 +99,6 @@ class GPTClient:
         chain = prompt | self.client
         # print(chain)
         return chain
-
 
     def gen_story_node(self, story_description, story_arc, num_endings):
         '''A method for generating a story node'''
@@ -180,13 +134,12 @@ class GPTClient:
         pass
 
 if __name__ == '__main__':
-    # print("phase 1")
-    # portkey_headers = createHeaders(api_key=os.getenv('PORTKEY_API_KEY'),virtual_key=os.getenv('VIRTUAL_KEY'))
-    # llm = ChatOpenAI(api_key="X", base_url=PORTKEY_GATEWAY_URL, default_headers=portkey_headers, model="mistral-large-latest")
-    # print(llm.invoke("What is the meaning of life, universe and everything?"))
-
     print("phase 2")
     gpt_client = GPTClient()
-    # story_description = "a young girl, Red, who comes across a cunning wolf on the way to her grandmother's home. The wolf deceives both her and her grandmother and eats them"
-    # story_arc= "Rise-Fall-Rise"
-    # num_endings = 2
+    STORY_DESCRIPTION = "a young girl, \
+        Red, who comes across a cunning wolf on the way to her grandmother's home. \
+        The wolf deceives both her and her grandmother and eats them"
+    STORY_ARC= "Rise-Fall-Rise"
+    NUM_ENDINGS = 2
+    story_node = gpt_client.gen_story_node(STORY_DESCRIPTION, STORY_ARC, NUM_ENDINGS)
+    print(story_node)

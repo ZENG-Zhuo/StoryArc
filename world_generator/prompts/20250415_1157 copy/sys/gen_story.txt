@@ -9,53 +9,53 @@ Output: A JSON file that contain the story following story arc.
 [
 ###First Story Arc ###
 [
-{{
+{
 "Node Number": "###Node Number###"
 "Story Line": "###Story Line in this node###"
 "Next Node": "###List of node number that follow this story line or 'END' if end node###"
 "Story Arc": "###First Story Arc###"
-}}
+}
 …
-{{
+{
 "Node Number": "###Node Number###"
 "Story Line": "###Story Line in this node###"
 "Next Node": "###List of node number that follow this story line or 'END' if end node###"
 "Story Arc": "###First Story Arc###"
-}}
+}
 ]
  
 ###Second Story Arc ###
 [
-{{
+{
 "Node Number": "###Node Number###"
 "Story Line": "###Story Line in this node###"
 "Next Node": "###List of node number that follow this story line or 'END' if end node###"
 "Story Arc": "###First Story Arc###"
-}}
+}
 …
-{{
+{
 "Node Number": "###Node Number###"
 "Story Line": "###Story Line in this node###"
 "Next Node": "###List of node number that follow this story line or 'END' if end node###"
 "Story Arc": "###First Story Arc###"
-}}
+}
 ]
  
 ###Third Story Arc 3###
 [
-{{
+{
 "Node Number": "###Node Number###"
 "Story Line": "###Story Line in this node###"
 "Next Node": "###List of node number that follow this story line or 'END' if end node###"
 "Story Arc": "###First Story Arc###"
-}}
+}
 …
-{{
+{
 "Node Number": "###Node Number###"
 "Story Line": "###Story Line in this node###"
 "Next Node": "###List of node number that follow this story line or 'END' if end node###"
 "Story Arc": "###First Story Arc###"
-}}
+}
 ]
 ]
  
@@ -77,59 +77,59 @@ Example Output:
 [
 Rise
 [
-{{
+{
 "Node Number": "1.1.1"
 "Story Line": "Red's mother gives her an important letter to deliver to her grandmother and warns her not to talk to strangers."
 "Next Node": "[1.2.1", "1.2.2"]
 "Story Arc": "Rise"
-}}
-{{
+}
+{
 "Node Number": "1.2.1"
 "Story Line": "Red receives a mysterious red cloak, said to protect her in the forest"
 "Next Node": ["1.3.1"]
 "Story Arc": "Rise"
-}}
-{{
+}
+{
 "Node Number": "1.2.2"
 "Story Line": "Her village is hosting its annual Forest Festival, and she must fetch a special cake from her grandmother."
 "Next Node": ["1.3.2"]
 "Story Arc": "Rise"
-}}
-{{
+}
+{
 "Node Number": "1.3.1"
 "Story Line": "Red chases beautiful butterflies through the forest, enjoying the freedom and nature's beauty."
 "Next Node": ["1.4.1"]
 "Story Arc": "Rise"
-}}
-{{
+}
+{
 "Node Number": "1.3.2"
 "Story Line": "She meets an old man who gives her a lucky charm, saying it will help her in times of need."
 "Next Node": ["1.4.1"]
 "Story Arc": "Rise"
-}}
-{{
+}
+{
 "Node Number": "1.3.3"
 "Story Line": "Red discovers an unfamiliar path and, despite hesitation, decides to explore."
 "Next Node": ["1.4.2"]
 "Story Arc": "Rise"
-}}
+}
 $$$$$$ Continue with remaining nodes in the first arc $$$$$$
 ]
  
 Fall
 [
-{{
+{
 "Node Number": "2.1.1"
 "Story Line": "The Big Bad Wolf reaches Grandma's house first, locks her in the cellar, and disguises himself in her clothes."
 "Next Node": "[2.2.1"]
 "Story Arc": "Fall"
-}}
-{{
+}
+{
 "Node Number": "2.1.2"
 "Story Line": "Using magic, the wolf transforms into Grandma, preparing to deceive Red."
 "Next Node": ["2.2.1"]
 "Story Arc": "Fall"
-}}
+}
 $$$$$$ Continue with remaining nodes in the second arc $$$$$$
 ]
 $$$$$$ The remaining nodes in the third arc $$$$$$$

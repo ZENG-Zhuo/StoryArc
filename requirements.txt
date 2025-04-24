@@ -1,0 +1,6 @@
+# world generator
+portkey-ai
+openai
+python-dotenv
+langchain-core
+langchain-openai

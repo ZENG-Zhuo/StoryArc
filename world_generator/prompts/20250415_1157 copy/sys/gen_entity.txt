@@ -7,27 +7,27 @@ List of Story Nodes:
 [
 "### Story Arc 1 ###",
 [
-{{
+{
 "Node Number": "###Node Number###",
 "Story Line": "###Story Line in this node###"
 "Next Node": ["###List of node number that follow this story line or 'END' if end node###"],
 "Story Arc": "###First Story Arc###"
-}},
-{{
+},
+{
 ### Second Story Node Information ###
-}}
+}
 ],
  "### Story Arc 2 ###",
 [
-{{
+{
 "Node Number": "###Node Number###",
 "Story Line": "###Story Line in this node###",
 "Next Node": ["###List of node number that follow this story line or 'END' if end node###"],
 "Story Arc": "###First Story Arc###"
-}},
-{{
+},
+{
 ### Second Story Node Information ###
-}}
+}
 ],
 ### Continue with remaining story arc and nodes ###
 ]
@@ -35,14 +35,14 @@ List of Story Nodes:
  
 Output: A JSON file with the following information, but for now, just put this in text.
 [
-{{
+{
 "Node": "###First Node Number###",
 "Story Arc": "###Story Arc###",
 "Description": "###Scene Description###",
 "Next Node": "###List of node number that follow this story line or 'END' if end node###",
-"Entity": {{
+"Entity": {
 "NPCData": [
-{{
+{
 "Name": "###Character 1 in Node if any###",
 "Description": "###Description of Character###",
 "Dialogue":"###Dialogue from scene description if specified. Otherwise, innovate one as necessary### ",
@@ -51,17 +51,17 @@ Output: A JSON file with the following information, but for now, just put this i
 "Health": ###Stat of the Character as appropriate; Considering the playability of the game###,
 "Friend": ###Relationship to main character (player). True if friendly, False if enemy###,
 "Sprite": "resources/sprites/character1.png
-                }},
-                {{
+                },
+                {
                      ####Repeats for other characters####
-                }}
+                }
 ],
-"PlayerData": {{
+"PlayerData": {
 "Health": ###change of health If any event, but not item, affects player's health###,
 "Attack": ###change of health If any event, but not item, affect player's health###
-}},
+},
 "ItemData": [
-{{
+{
 "Name": "###Item 1 in Node if any###",
 "Description": "###Description of Character###",
 "pickable": ###if the item could be picked up by player, true or false###,
@@ -69,15 +69,15 @@ Output: A JSON file with the following information, but for now, just put this i
 "Health": ###Stat of the item as appropriate; Considering the playability of the game###,
 "Durability": ###Stat of the item as appropriate; Considering the playability of the game###,
 "Sprite": "resources/sprites/item1.png"   
-}}
+}
 ###Repeats for other items, if any###
 ]
-}}
-}},
-{{
+}
+},
+{
 "Node": "###Second Node Number###",
 ...
-}}
+}
 ]
  
  
@@ -88,21 +88,21 @@ Input: Red was told by her mother to deliver a letter to her grandmother and thi
 [
 "Rise",
 [
-{{
+{
 "Node Number": "1.1.1"
 "Story Line": "Red picks knife and attacks wolf with Hunter"
 "Next Node": ["1.2.1", "1.2.1"]
 "Story Arc": "Rise"
-}},
-{{
+},
+{
 ### Continue with remaining nodes ###
-}}
+}
 ],
 "Fall",
 [
-{{
+{
 ### Remaining Nodes ###
-}}
+}
 ],
 ### Continue with remaining nodes ###
 ]
@@ -111,14 +111,14 @@ Input: Red was told by her mother to deliver a letter to her grandmother and thi
  
 Output:
 [
-{{
+{
 "Node": "1.1.1",
 "Story Arc": "Rise",
 "Description": "Red picks knife and attacks wolf with Hunter",
 "Next Node": "###List of node number that follow this story line or 'END' if end node###",
-"Entity": {{
+"Entity": {
 "NPCData": [
-{{
+{
 "Name": "Wolf",
 "Description": "A fierce wolf with glowing eyes.",
 "Dialogue": "Hi little girl I will eat you!",
@@ -126,8 +126,8 @@ Output:
 "Ranged": 0,	// 0 = melee, 1 = ranged
 "Health": 80,
 "Friend": false
-                }},
-                {{
+                },
+                {
                     "Name": "Hunter",
                     "Description": "A friendly hunter holding a gun.",
                     "Dialogue": "Let me help you",
@@ -135,14 +135,14 @@ Output:
                     "ranged": 1,	// 0 = melee, 1 = ranged
                     "health": 80,
                     "Friend": true
-                }}
+                }
             ],
-            "PlayerData": {{
+            "PlayerData": {
                 "health": 1,
                 "attack": 0
-            }},
+            },
             "ItemData": [
-                {{
+                {
                     "Name": "knife",
                     "Description": "A sharp blade, useful for survival.",
                     "Pickable": true,
@@ -150,14 +150,14 @@ Output:
                     "Health": 0,
                     "Durability": 50,
                     "Sprite": "sprites/knife.png"   
-                }}
+                }
             ]
-    	}}
-	}},
-	{{
+    	}
+	},
+	{
         "Node": "1.1.2",
     	...
-	}}
+	}
 ]
 ```
  

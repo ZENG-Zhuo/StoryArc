@@ -1,1 +1,6 @@
 __pycache__/
+.env
+
+# world generator
+temp.py
+*temp*
