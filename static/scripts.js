@@ -36,104 +36,212 @@ $(document).ready(function () {
 });
 
 function extractStoryGraph(prompt) {
-    return {
-        nodes: [
-            { id: 'Start', label: 'The Beginning: A Quiet Village' },
-            { id: 'CallToAdventure', label: 'Call to Adventure' },
-            { id: 'Refusal', label: 'Refusal of the Call' },
-            { id: 'Mentor', label: 'Meeting the Mentor' },
-            { id: 'FirstThreshold', label: 'Crossing the First Threshold' },
-            { id: 'Tests', label: 'Trials and Tests' },
-            { id: 'Allies', label: 'Gaining Allies' },
-            { id: 'Enemies', label: 'Facing Enemies' },
-            { id: 'InnerConflict', label: 'Inner Conflict and Doubt' },
-            { id: 'MajorTwist', label: 'Major Plot Twist' },
-            { id: 'Climax', label: 'Final Showdown' },
-            { id: 'Sacrifice', label: 'The Sacrifice' },
-            { id: 'Resolution', label: 'Return Home Changed' },
-            { id: 'SecretEnding', label: 'Secret Ending (Optional)' },
-            { id: 'SideQuest1', label: 'Side Quest: The Lost Artifact' },
-            { id: 'SideQuest2', label: 'Side Quest: Help the Villagers' }
-        ],
-        edges: [
-            { source: 'Start', target: 'CallToAdventure', label: 'disrupted by' },
-            { source: 'CallToAdventure', target: 'Refusal', label: 'causes hesitation' },
-            { source: 'Refusal', target: 'Mentor', label: 'resolved by guidance' },
-            { source: 'Mentor', target: 'FirstThreshold', label: 'leads to action' },
-            { source: 'FirstThreshold', target: 'Tests', label: 'opens path to' },
-            { source: 'Tests', target: 'Allies', label: 'results in bonds' },
-            { source: 'Tests', target: 'Enemies', label: 'reveals opposition' },
-            { source: 'Enemies', target: 'InnerConflict', label: 'provokes doubt' },
-            { source: 'Allies', target: 'InnerConflict', label: 'bring hope' },
-            { source: 'InnerConflict', target: 'MajorTwist', label: 'triggers' },
-            { source: 'MajorTwist', target: 'Climax', label: 'builds to' },
-            { source: 'Climax', target: 'Sacrifice', label: 'demands' },
-            { source: 'Sacrifice', target: 'Resolution', label: 'results in' },
-            { source: 'Resolution', target: 'SecretEnding', label: 'unlocks (if conditions met)' },
-            { source: 'FirstThreshold', target: 'SideQuest1', label: 'optional path' },
-            { source: 'Tests', target: 'SideQuest2', label: 'optional help' },
-            { source: 'SideQuest1', target: 'MajorTwist', label: 'influences' },
-            { source: 'SideQuest2', target: 'Allies', label: 'gains trust' }
-        ]
+    const storyData = preprocessStory(prompt); // Assume this returns an array like in your example
+    const graph = {
+        nodes: [],
+        edges: []
     };
+
+    storyData.forEach(arc => {
+        arc.nodes.forEach(node => {
+            // Add the node
+            graph.nodes.push({
+                id: node.nodeID,
+                label: node.storyline
+            });
+
+            // Add the edges
+            node.nextNode.forEach(link => {
+                graph.edges.push({
+                    source: node.nodeID,
+                    target: link.nodeID,
+                    label: link.criteriaDescription || 'no criteria'
+                });
+            });
+        });
+    });
+
+    return graph;
+}
+
+function preprocessStory(prompt) {
+
+    return [
+        {
+            storyArc: "Rise-Fall-Rise",
+            nodes: [
+                {
+                    nodeID: "1",
+                    storyline: "Red leaves her colorful, folklore-rich village carrying a basket of herbal breads and sweet juniper wine for Grandmother, who lives deep in the Singing Pines—an ancient forest known for its whispering trees and time-bending paths.",
+                    nextNode: [{ nodeID: "2", criteriaDescription: "no criteria" }]
+                },
+                {
+                    nodeID: "2",
+                    storyline: "Red meets a curious fox spirit who warns her: the forest paths are shifting today, and she should not talk to strangers. Red thanks the spirit and continues with caution.",
+                    nextNode: [{ nodeID: "3", criteriaDescription: "talk to the fox spirit" }]
+                },
+                {
+                    nodeID: "3",
+                    storyline: "At a fork under a whispering tree, Red encounters a charming wolf dressed in a traveling cloak. The wolf asks where Red is headed and offers a 'shortcut' through the Duskroot Trail—a rarely used path said to echo past footsteps.",
+                    nextNode: [
+                        { nodeID: "4", criteriaDescription: "talk to the wolf" },
+                        { nodeID: "5", criteriaDescription: "refuse to talk to the wolf and take the main trail" }
+                    ]
+                },
+                {
+                    nodeID: "4",
+                    storyline: "Red trusts the wolf and takes the shortcut. The path disorients her, and strange forest illusions lure her into losing time. Meanwhile, the wolf reaches Grandmother’s cottage first.",
+                    nextNode: [{ nodeID: "6", criteriaDescription: "no criteria" }]
+                },
+                {
+                    nodeID: "5",
+                    storyline: "Red takes the main trail, passing by a shrine with runes glowing faintly. She prays briefly, and an owl guardian gifts her a pine-sigil for protection.",
+                    nextNode: [{ nodeID: "6", criteriaDescription: "talk to the owl guardian" }]
+                },
+                {
+                    nodeID: "6",
+                    storyline: "Red arrives at the cottage. The door is slightly ajar. The cottage smells faintly of juniper but something feels wrong. Grandmother's shawl is on the floor.",
+                    nextNode: [
+                        { nodeID: "7", criteriaDescription: "enter the cottage quietly" },
+                        { nodeID: "8", criteriaDescription: "call out to Grandmother loudly" }
+                    ]
+                },
+                {
+                    nodeID: "7",
+                    storyline: "Red sneaks in and sees the wolf in Grandmother’s clothing. She hides and notices Grandmother trapped under the bed.",
+                    nextNode: [
+                        { nodeID: "9", criteriaDescription: "free Grandmother while distracting the wolf" },
+                        { nodeID: "10", criteriaDescription: "confront the wolf directly" }
+                    ]
+                },
+                {
+                    nodeID: "8",
+                    storyline: "Red's loud voice alerts the wolf, who pounces. Red barely has time to scream before she’s trapped.",
+                    nextNode: [{ nodeID: "10", criteriaDescription: "no criteria" }]
+                },
+                {
+                    nodeID: "9",
+                    storyline: "Red tosses a bread roll at the wolf, who turns, and pulls Grandmother free. Grandmother activates a protective hearth rune, and the wolf is expelled from the cottage in a burst of light.",
+                    nextNode: [{ nodeID: "11", criteriaDescription: "no criteria" }]
+                },
+                {
+                    nodeID: "10",
+                    storyline: "The wolf overpowers Red and swallows both her and Grandmother. However, a nearby woodsman hears the commotion.",
+                    nextNode: [{ nodeID: "12", criteriaDescription: "talk to the woodsman NPC" }]
+                },
+                {
+                    nodeID: "11",
+                    storyline: "With the wolf gone, Red and Grandmother enjoy the herbal breads in peace. The forest’s spirits bless Red for her bravery and cleverness.",
+                    nextNode: []
+                },
+                {
+                    nodeID: "12",
+                    storyline: "The woodsman defeats the wolf, cuts open its belly, and saves Red and Grandmother. They sew the wolf’s belly with nettle thorns, ensuring he never harms another soul.",
+                    nextNode: []
+                }
+            ]
+        }
+    ];
 }
 
 
+let svg, zoomLayer, simulation, initialized = false;
+
 function visualizeGraph(nodes, links) {
-    $('#graphContainer').empty();
     d3.select("#contextMenu").style("display", "none");
 
     const width = $('#graphContainer').width();
     const height = 500;
-    let pendingConnection = null;
 
-    const svg = d3.select("#graphContainer")
-        .append("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .style("background-color", "#222831");
+    if (!initialized) {
+        svg = d3.select("#graphContainer")
+            .append("svg")
+            .attr("width", width)
+            .attr("height", height)
+            .style("background-color", "#222831");
 
-    const zoomLayer = svg.append("g");
+        zoomLayer = svg.append("g");
 
-    const zoom = d3.zoom()
-        .scaleExtent([0.3, 3])
-        .on("zoom", (event) => {
-            zoomLayer.attr("transform", event.transform);
+        zoomLayer.append("g").attr("class", "edges");
+        zoomLayer.append("g").attr("class", "edge-labels");
+        zoomLayer.append("g").attr("class", "nodes");
+        zoomLayer.append("g").attr("class", "node-labels");
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.3, 3])
+            .on("zoom", (event) => {
+                zoomLayer.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+
+        svg.append("defs").append("marker")
+            .attr("id", "arrow")
+            .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 20)
+            .attr("refY", 0)
+            .attr("markerWidth", 6)
+            .attr("markerHeight", 6)
+            .attr("orient", "auto")
+            .attr("fill", "#EEEEEE")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5");
+
+        simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id(d => d.id).distance(150))
+            .force("charge", d3.forceManyBody().strength(-300))
+            .force("center", d3.forceCenter(width / 2, height / 2));
+
+        svg.on("contextmenu", function (event) {
+            if (event.target.tagName === "svg") {
+                event.preventDefault();
+                const [x, y] = d3.pointer(event, this);
+                showContextMenu(event.pageX, event.pageY, [
+                    {
+                        label: "➕ Add Node",
+                        action: () => {
+                            const newId = Date.now().toString();
+                            nodes.push({ id: newId, label: "New Node", x, y });
+                            visualizeGraph(nodes, links);
+                        }
+                    }
+                ]);
+            }
         });
 
-    svg.call(zoom);
+        d3.select("body").on("click", () => {
+            d3.select("#contextMenu").style("display", "none");
+        });
 
-    svg.append("defs").append("marker")
-        .attr("id", "arrow")
-        .attr("viewBox", "0 -5 10 10")
-        .attr("refX", 20)
-        .attr("refY", 0)
-        .attr("markerWidth", 6)
-        .attr("markerHeight", 6)
-        .attr("orient", "auto")
-        .attr("fill", "#EEEEEE")
-        .append("path")
-        .attr("d", "M0,-5L10,0L0,5");
+        initialized = true;
+    }
 
-    const simulation = d3.forceSimulation(nodes)
-        .force("link", d3.forceLink(links).id(d => d.id).distance(150))
-        .force("charge", d3.forceManyBody().strength(-300))
-        .force("center", d3.forceCenter(width / 2, height / 2));
+    simulation.nodes(nodes);
+    simulation.force("link").links(links);
 
-    const link = zoomLayer.append("g")
+    // ----- Links -----
+    const link = zoomLayer.select("g.edges")
+        .selectAll("line.link")
+        .data(links, d => `${d.source.id}-${d.target.id}`);
+
+    link.enter()
+        .append("line")
+        .attr("class", "link")
         .attr("stroke", "#393E46")
         .attr("stroke-width", 2)
-        .selectAll("line")
-        .data(links)
-        .enter()
-        .append("line")
-        .attr("marker-end", "url(#arrow)");
+        .attr("marker-end", "url(#arrow)")
+        .merge(link);
 
-    const edgeLabels = zoomLayer.append("g")
-        .selectAll("text")
-        .data(links)
-        .enter()
+    link.exit().remove();
+
+    // ----- Edge Labels -----
+    const edgeLabels = zoomLayer.select("g.edge-labels")
+        .selectAll("text.edge-label")
+        .data(links, d => `${d.source.id}-${d.target.id}`);
+
+    edgeLabels.enter()
         .append("text")
+        .attr("class", "edge-label")
         .text(d => d.label)
         .attr("font-size", "10px")
         .attr("fill", "#EEEEEE")
@@ -156,27 +264,30 @@ function visualizeGraph(nodes, links) {
                     }
                 }
             ]);
-        });
+        })
+        .merge(edgeLabels)
+        .text(d => d.label);;
 
-    const node = zoomLayer.append("g")
-        .selectAll("circle")
-        .data(nodes)
-        .enter()
+    edgeLabels.exit().remove();
+
+    // ----- Nodes -----
+    const node = zoomLayer.select("g.nodes")
+        .selectAll("circle.node")
+        .data(nodes, d => d.id);
+
+    node.enter()
         .append("circle")
+        .attr("class", "node")
         .attr("r", 15)
         .attr("fill", "#00ADB5")
         .call(drag(simulation))
         .on("click", (event, d) => {
-            if (pendingConnection) {
-                if (pendingConnection !== d) {
-                    links.push({
-                        source: pendingConnection.id,
-                        target: d.id,
-                        label: "New Link"
-                    });
-                }
+            if (pendingConnection && pendingConnection !== d) {
+                links.push({ source: pendingConnection.id, target: d.id, label: "New Link" });
                 pendingConnection = null;
                 visualizeGraph(nodes, links);
+            } else {
+                pendingConnection = null;
             }
         })
         .on("contextmenu", (event, d) => {
@@ -198,71 +309,70 @@ function visualizeGraph(nodes, links) {
                         const nodeIndex = nodes.indexOf(d);
                         if (nodeIndex !== -1) {
                             nodes.splice(nodeIndex, 1);
-                            links = links.filter(l => l.source.id !== d.id && l.target.id !== d.id);
+                            for (let i = links.length - 1; i >= 0; i--) {
+                                if (links[i].source.id === d.id || links[i].target.id === d.id) {
+                                    links.splice(i, 1);
+                                }
+                            }
                             visualizeGraph(nodes, links);
                         }
                     }
                 }
             ]);
-        });
+        })
+        .merge(node);
 
-    const labels = zoomLayer.append("g")
-        .selectAll("text")
-        .data(nodes)
-        .enter()
+    node.exit().remove();
+
+    // ----- Node Labels -----
+    const labels = zoomLayer.select("g.node-labels")
+    .selectAll("text.node-label")
+    .data(nodes, d => d.id);
+
+    labels.enter()
         .append("text")
-        .text(d => d.label)
+        .attr("class", "node-label")
         .attr("font-size", "12px")
         .attr("fill", "#EEEEEE")
         .attr("text-anchor", "middle")
-        .style("pointer-events", "none");
+        .style("pointer-events", "auto")  // Needed to capture mouse events
+        .on("mouseover", function (event, d) {
+            d3.select(this).text(d.label); // Show full label
+        })
+        .on("mouseout", function (event, d) {
+            const shortLabel = d.label.length > 15 ? d.label.slice(0, 15) + "..." : d.label;
+            d3.select(this).text(shortLabel); // Revert to truncated
+        })
+        .merge(labels)
+        .attr("x", d => d.x)
+        .attr("y", d => d.y)
+        .text(d => d.label.length > 15 ? d.label.slice(0, 15) + "..." : d.label);
 
+    labels.exit().remove();
+
+
+    // ----- Ticking -----
     simulation.on("tick", () => {
-        link
+        zoomLayer.selectAll("line.link")
             .attr("x1", d => d.source.x)
             .attr("y1", d => d.source.y)
             .attr("x2", d => d.target.x)
             .attr("y2", d => d.target.y);
 
-        edgeLabels
+        zoomLayer.selectAll("text.edge-label")
             .attr("x", d => (d.source.x + d.target.x) / 2)
             .attr("y", d => (d.source.y + d.target.y) / 2 - 5);
 
-        node
+        zoomLayer.selectAll("circle.node")
             .attr("cx", d => d.x)
             .attr("cy", d => d.y);
 
-        labels
+        zoomLayer.selectAll("text.node-label")
             .attr("x", d => d.x)
             .attr("y", d => d.y);
     });
 
-    svg.on("contextmenu", function (event) {
-        if (event.target.tagName === "svg") {
-            event.preventDefault();
-            const [x, y] = d3.pointer(event, this);
-            showContextMenu(event.pageX, event.pageY, [
-                {
-                    label: "➕ Add Node",
-                    action: () => {
-                        const newId = Date.now().toString();
-                        nodes.push({
-                            id: newId,
-                            label: "New Node",
-                            x: x,
-                            y: y
-                        });
-                        visualizeGraph(nodes, links);
-                    }
-                }
-            ]);
-        }
-    });
-
-    d3.select("body").on("click", () => {
-        d3.select("#contextMenu").style("display", "none");
-    });
-
+    simulation.alpha(1).restart();
     function drag(simulation) {
         return d3.drag()
             .on("start", (event, d) => {

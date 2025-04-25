@@ -66,6 +66,25 @@ body {
 .line:nth-child(9)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #FF1493 75%, #FF1493 100%); animation-delay: 4.5s; }
 .line:nth-child(10)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #00BFFF 75%, #00BFFF 100%); animation-delay: 5s; }
 
+.modal-content {
+    border: 2px solid #00ADB5;
+    border-radius: 10px;
+  }
+  
+  .modal-title {
+    color: #00ADB5;
+  }
+  
+  .btn-info {
+    background-color: #00ADB5;
+    border: none;
+  }
+  
+  .btn-info:hover {
+    background-color: #009ca5;
+  }
+  
+
 .scrollable {
     width: 80vw;        /* 80% of the viewport width */
     height: 60vh;       /* 60% of the viewport height */
