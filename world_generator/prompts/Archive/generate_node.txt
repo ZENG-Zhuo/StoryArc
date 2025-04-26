@@ -1,0 +1,49 @@
+Your task is to generate a JSON file for a game setting with unique and interesting storylines. You will be given an input called "story arc" and design the game into different phases that follow the story arc structure. The following are the INPUT OPTIONS: [short story description, story arc]
+
+The Story Arc controls the plot progression and emotional intensity throughout the game, including:
+
+- Rise: The plot is happy and encouraging.
+- Fall: The plot becomes sadder and more tensed.
+
+The output should be in JSON format
+
+Example:
+'''
+Input:"description: 'Write a story about Little Red Riding Hood.', story_arc: 'rise, fall, rise'"
+Output:"{{ 
+  "Rise": [
+    {{"node": "1_1_1", "content": "Red's mother gives her an important letter to deliver to her grandmother and warns her not to talk to strangers."}},
+    {{"node": "1_1_2", "content": "Red receives a mysterious red cloak, said to protect her in the forest."}},
+    {{"node": "1_1_3", "content": "Her village is hosting its annual Forest Festival, and she must fetch a special cake from her grandmother."}},
+    {{"node": "1_2_1", "content": "Red chases beautiful butterflies through the forest, enjoying the freedom and nature’s beauty."}},
+    {{"node": "1_2_2", "content": "She meets an old man who gives her a lucky charm, saying it will help her in times of need."}},
+    {{"node": "1_2_3", "content": "Red discovers an unfamiliar path and, despite hesitation, decides to explore."}},
+    {{"node": "1_3_1", "content": "A mysterious traveler greets her in the forest, appearing friendly as he asks about her destination."}},
+    {{"node": "1_3_2", "content": "Red finds an injured fox, which, in a weak voice, tricks her into revealing her grandmother’s location."}},
+    {{"node": "1_3_3", "content": "She meets a kind witch who asks where she’s headed and warns her of hidden dangers in the forest."}}
+  ],
+  "Fall": [
+    {{"node": "2_1_1", "content": "The Big Bad Wolf reaches Grandma’s house first, locks her in the cellar, and disguises himself in her clothes."}},
+    {{"node": "2_1_2", "content": "Using magic, the wolf transforms into Grandma, preparing to deceive Red."}},
+    {{"node": "2_1_3", "content": "The wolf gathers a pack of smaller wolves to surround the house and ambush Red."}},
+    {{"node": "2_2_1", "content": "Red enters the house and notices Grandma looks odd but still trusts her."}},
+    {{"node": "2_2_2", "content": "She senses something is off but convinces herself she’s overthinking."}},
+    {{"node": "2_2_3", "content": "Red finds Grandma’s gaze unfamiliar, but her gentle words lull her into a false sense of security."}},
+    {{"node": "2_3_1", "content": "The wolf suddenly pounces and swallows Red whole, trapping her in total despair."}},
+    {{"node": "2_3_2", "content": "Red is locked in a cage, helpless and unable to escape."}},
+    {{"node": "2_3_3", "content": "The wolf casts a spell, turning Red into a lamb, planning to feast on her later."}}
+  ],
+  "Rise": [
+    {{"node": "3_1_1", "content": "A hunter passing by hears strange snoring from Grandma’s house and senses danger."}},
+    {{"node": "3_1_2", "content": "Grandma finds a hammer in the cellar and pounds on the walls, catching the hunter’s attention."}},
+    {{"node": "3_1_3", "content": "Forest birds spot the wolf’s deception and fly off to alert the hunter."}},
+    {{"node": "3_2_1", "content": "The hunter bursts in, sees the sleeping wolf, and raises his rifle."}},
+    {{"node": "3_2_2", "content": "He tricks the wolf into stepping outside, then swiftly ties it up."}},
+    {{"node": "3_2_3", "content": "The hunter enlists the forest animals to surround and subdue the wolf."}},
+    {{"node": "3_3_1", "content": "Rescued, Red learns to recognize danger and vows never to trust strangers again."}},
+    {{"node": "3_3_2", "content": "She grows braver from her ordeal and becomes a guardian of the forest, protecting other travelers."}},
+    {{"node": "3_3_3", "content": "Red and Grandma set a trap, capturing another lurking wolf, ensuring their safety for good."}}
+  ]
+}}"
+'''
+ 

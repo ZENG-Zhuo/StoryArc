@@ -1,0 +1,164 @@
+INSTRUCTION: Your task is to generate a JSON file for a game setting with unique and interesting storylines given the following INPUT OPTIONS:
+ 
+Follow the format in the example below, without duplicating its content.
+Input: "###Short Story Description###"
+List of Story Nodes:
+[
+[
+"### Story Arc 1 ###",
+[
+{
+"Node Number": "###Node Number###",
+"Story Line": "###Story Line in this node###"
+"Next Node": ["###List of node number that follow this story line or 'END' if end node###"],
+"Story Arc": "###First Story Arc###"
+},
+{
+### Second Story Node Information ###
+}
+],
+ "### Story Arc 2 ###",
+[
+{
+"Node Number": "###Node Number###",
+"Story Line": "###Story Line in this node###",
+"Next Node": ["###List of node number that follow this story line or 'END' if end node###"],
+"Story Arc": "###First Story Arc###"
+},
+{
+### Second Story Node Information ###
+}
+],
+### Continue with remaining story arc and nodes ###
+]
+]
+ 
+Output: A JSON file with the following information, but for now, just put this in text.
+[
+{
+"Node": "###First Node Number###",
+"Story Arc": "###Story Arc###",
+"Description": "###Scene Description###",
+"Next Node": "###List of node number that follow this story line or 'END' if end node###",
+"Entity": {
+"NPCData": [
+{
+"Name": "###Character 1 in Node if any###",
+"Description": "###Description of Character###",
+"Dialogue":"###Dialogue from scene description if specified. Otherwise, innovate one as necessary### ",
+"Attack": ###Stat of the Character as appropriate; Considering the playability of the game###,
+"Ranged": ###Attack mode of Character as appropriate: 0 for melee, 1 for ranged###,
+"Health": ###Stat of the Character as appropriate; Considering the playability of the game###,
+"Friend": ###Relationship to main character (player). True if friendly, False if enemy###,
+"Sprite": "resources/sprites/character1.png
+                },
+                {
+                     ####Repeats for other characters####
+                }
+],
+"PlayerData": {
+"Health": ###change of health If any event, but not item, affects player's health###,
+"Attack": ###change of health If any event, but not item, affect player's health###
+},
+"ItemData": [
+{
+"Name": "###Item 1 in Node if any###",
+"Description": "###Description of Character###",
+"pickable": ###if the item could be picked up by player, true or false###,
+"Attack": ###Stat of the item as appropriate; Considering the playability of the game###,
+"Health": ###Stat of the item as appropriate; Considering the playability of the game###,
+"Durability": ###Stat of the item as appropriate; Considering the playability of the game###,
+"Sprite": "resources/sprites/item1.png"   
+}
+###Repeats for other items, if any###
+]
+}
+},
+{
+"Node": "###Second Node Number###",
+...
+}
+]
+ 
+ 
+Example:
+Input: Red was told by her mother to deliver a letter to her grandmother and this is a story about her journey.
+ 
+[
+[
+"Rise",
+[
+{
+"Node Number": "1.1.1"
+"Story Line": "Red picks knife and attacks wolf with Hunter"
+"Next Node": ["1.2.1", "1.2.1"]
+"Story Arc": "Rise"
+},
+{
+### Continue with remaining nodes ###
+}
+],
+"Fall",
+[
+{
+### Remaining Nodes ###
+}
+],
+### Continue with remaining nodes ###
+]
+]
+ 
+ 
+Output:
+[
+{
+"Node": "1.1.1",
+"Story Arc": "Rise",
+"Description": "Red picks knife and attacks wolf with Hunter",
+"Next Node": "###List of node number that follow this story line or 'END' if end node###",
+"Entity": {
+"NPCData": [
+{
+"Name": "Wolf",
+"Description": "A fierce wolf with glowing eyes.",
+"Dialogue": "Hi little girl I will eat you!",
+"Attack": 15,
+"Ranged": 0,	// 0 = melee, 1 = ranged
+"Health": 80,
+"Friend": false
+                },
+                {
+                    "Name": "Hunter",
+                    "Description": "A friendly hunter holding a gun.",
+                    "Dialogue": "Let me help you",
+                    "attack": 15,
+                    "ranged": 1,	// 0 = melee, 1 = ranged
+                    "health": 80,
+                    "Friend": true
+                }
+            ],
+            "PlayerData": {
+                "health": 1,
+                "attack": 0
+            },
+            "ItemData": [
+                {
+                    "Name": "knife",
+                    "Description": "A sharp blade, useful for survival.",
+                    "Pickable": true,
+                    "Attack": 10,
+                    "Health": 0,
+                    "Durability": 50,
+                    "Sprite": "sprites/knife.png"   
+                }
+            ]
+    	}
+	},
+	{
+        "Node": "1.1.2",
+    	...
+	}
+]
+```
+ 
+Now I want you to generate the full JSON file for me with the following inputs:
