@@ -5,61 +5,69 @@ This module provides Pydantic models for representing and managing branching sto
 including nodes, arcs, and transitions between story elements.
 """
 
-from pydantic import BaseModel, Field
 from typing import List
+from pydantic import BaseModel
 
-class NextNode(BaseModel):
+class nextLevel(BaseModel):
     """Represents a connection to the next story node with a criteriaDescription."""
     criteriaDescription: str
-    nodeID: str
+    index: int
 
-class StoryNode(BaseModel):
-    """Represents a single node in the story structure."""
-    nodeID: str
-    storyline: str
-    nextNode: List[NextNode]
-
-class StoryArc(BaseModel):
-    """Represents a story arc containing multiple story nodes."""
+class LevelNode(BaseModel):
+    """Represents a single level node in the story structure."""
     storyArc: str
-    nodes: List[StoryNode]
+    levelIndex: int
+    storyline: str
+    nextLevel: List[nextLevel]
 
 class StoryStructure(BaseModel):
-    """Represents the complete story structure containing multiple story arcs."""
-    arcs: List[StoryArc]
+    """Represents the complete story structure containing multiple levels."""
+    levelList: List[LevelNode]
 
     class Config:
         """Pydantic model configuration."""
         json_schema_extra = {
             "example": {
-                "arcs": [{
-                    "storyArc": "rise",
-                    "nodes": [{
-                        "nodeID": "1.1.1",
-                        "storyline": (
-                            "Red's mother gives her an important letter "
-                            "to deliver to her grandmother and warns her not to talk to strangers."
-                        ),
-                        "nextNode": [
+                "levelList": [
+                    {
+                        "storyArc": "Rise",
+                        "levelIndex": 1,
+                        "storyline": "You find yourself at the edge of a dense, foggy forest. An old man leans on a wooden staff near a worn signpost.",
+                        "nextLevel": [
                             {
-                                "criteriaDescription": "Talk to mother",
-                                "nodeID": "1.2.1"
+                                "criteriaDescription": "Take the left path",
+                                "index": 2
                             },
                             {
-                                "criteriaDescription": "Pick up knife",
-                                "nodeID": "1.2.2"
+                                "criteriaDescription": "Take the right path",
+                                "index": 3
                             }
                         ]
-                    }]
-                }]
+                    },
+                    {
+                        "storyArc": "Rise",
+                        "levelIndex": 1,
+                        "storyline": "You find yourself at the edge of a dense, foggy forest. An old man leans on a wooden staff near a worn signpost.",
+                        "nextLevel": [
+                            {
+                                "criteriaDescription": "Take the left path",
+                                "index": 2
+                            },
+                            {
+                                "criteriaDescription": "Take the right path",
+                                "index": 3
+                            }
+                        ]
+                    }
+                ]
             }
         }
 
     @classmethod
-    def from_list(cls, data: List[dict]) -> 'StoryStructure':
-        """Creates a StoryStructure instance from a list of arc dictionaries."""
-        return cls(arcs=[StoryArc(**arc) for arc in data])
+    def from_dict(cls, data: dict) -> 'StoryStructure':
+        """Creates a StoryStructure instance from a dictionary."""
+        return cls(levelList=[LevelNode(**level) for level in data.get('levelList', [])])
 
-    def to_list(self) -> List[dict]:
-        """Converts the StoryStructure instance to a list of dictionaries."""
-        return [arc.dict() for arc in self.arcs]
+    def to_dict(self) -> dict:
+        """Converts the StoryStructure instance to a dictionary."""
+        return {'levelList': [level.dict() for level in self.levelList]}

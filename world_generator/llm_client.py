@@ -14,12 +14,13 @@ from portkey_ai import createHeaders
 from pydantic import ValidationError, BaseModel
 
 from world_generator.model.story_node import StoryStructure
-
+from world_generator.model.entity import GameStructure
 
 
 load_dotenv()
 
-CURRENT_PROMPT_VERSION = '20250424_1107'
+CURRENT_PROMPT_VERSION = '20250427_2257'
+MAX_ATTEMPT = 1 # retry calling LLM if it fails
 
 class Formatter:
     '''A class for formatting the input to the LLM'''
@@ -66,8 +67,8 @@ class GPTClient:
             default_headers=portkey_headers,
             api_key='X',
             # temperature = 1.0,
-            # max_tokens=None,
-            # timeout=None,
+            max_tokens=4000,
+            timeout=60,
             # max_retries=2,
         )
 
@@ -82,14 +83,14 @@ class GPTClient:
     def _load_prompt(self, prompt_name):
         '''Load prompt from file'''
         prompt_path = self.prompts_dir / f"{prompt_name}.txt"
-        with open(prompt_path, 'r') as f:
+        with open(prompt_path, 'r', encoding='utf-8') as f:
             return f.read().strip()
 
     def _init_chain(self, prompt_name, escape_system_prompt_braces=True):
         '''A method for initializing different chains'''
         # TODO:
         # - add system prompt from the prompts folder
-        # - verify the response is in JSON 
+        # - verify the response is in JSON
         # return self._single_send(user_prompt, system_prompt)
         system_prompt = self._load_prompt(f'sys/{prompt_name}')
         user_prompt_template = self._load_prompt(f'user/{prompt_name}')
@@ -110,40 +111,59 @@ class GPTClient:
         # TODO:
         # - verify the response is in JSON
         # - handle error
-        response = self.story_chain.invoke({
-            "story_description": story_description,
-            "story_arc": story_arc,
-            "num_endings": num_endings
-        })
-        res_content = response.content
+        # handle exception
+        for _ in range(MAX_ATTEMPT):
+            response = self.story_chain.invoke({
+                "story_description": story_description,
+                "story_arc": story_arc,
+                "num_endings": num_endings
+            })
+            res_content = response.content
 
-        # for testing
-        # res_content = self.dummy_gen_story_node(story_description, story_arc, num_endings)
+            # for testing
+            # res_content = self.dummy_gen_story_node(story_description, story_arc, num_endings)
 
-        # clean the response
-        res_content = self.clean_json(res_content)
-        if self.verify_response_structure(StoryStructure, res_content):
-            return res_content
+            # clean the response
+            res_content = self.clean_json(res_content)
+            if self.verify_response_structure(StoryStructure, res_content):
+                return res_content
+            print("Something went wrong. Retrying...")
+        print("Reaching max attempts.")
         return None # TODO: handle error
 
 
-    def gen_entity(self, story_node):
+    def gen_entity(self, story_node: StoryStructure):
         '''A method for generating an entity
         The output will be node with entity
         '''
         # TODO:
         # - verify the response is in JSON
-        response = self.entity_chain.invoke({
-            "story_node": story_node
-        })
-        return response.content # Assuming you want the text content
+        # - handle error
+        # handle exception
+        for _ in range(MAX_ATTEMPT):
+            response = self.entity_chain.invoke({
+                "story_node": story_node
+            })
+            res_content = response.content
+
+            # for testing
+            # res_content = self.dummy_gen_story_node(story_description, story_arc, num_endings)
+
+            # clean the response
+            res_content = self.clean_json(res_content)
+            if self.verify_response_structure(GameStructure, res_content):
+                return res_content
+            print("Something went wrong. Retrying...")
+        print("Reaching max attempts.")
+        return None # TODO: handle error
 
     def verify_response_structure(self, dataclass: BaseModel, data: str):
         '''A method for verifying the response structure'''
         try:
             # print("Raw response:", data)  # Debug print
             json_data = json.loads(data)
-            dataclass.from_list(json_data)
+            # print(f"the json_data type is {type(json_data)}")
+            dataclass.from_dict(json_data)
             print("✅ The response is valid!")
         except ValidationError as e:
             print("❌ Validation failed:")
