@@ -1,0 +1,101 @@
+INSTRUCTION:  
+Your task is to generate a JSON file for a game setting with unique and interesting storylines.  
+You will be given an input called "story arc" and must design the game into different phases that follow the story arc structure.  
+
+The following are the INPUT OPTIONS:  
+[include the input short story description, story arc, number of starts, ends and storylines here]
+
+---
+
+**Input Format:**  
+Short Story Description / Setting: "###Story Description###"  
+Story Arc Type: ###One of these six arcs: "Rise", "Fall", "Fall-Rise", "Rise-Fall", "Rise-Fall-Rise", "Fall-Rise-Fall"###  
+Minimum Number of Endings: ###An integer###
+
+---
+
+**Output:**  
+A JSON object with the key `"levelList"` that contains the story following the story arc.  
+The structure is:
+
+```json
+"levelList": [
+    {
+        "storyArc": "###Story Arc Name###",
+        "levelIndex": ###Level Number (Integer, unique across the entire story)###,
+        "storyline": "###Story text for this node###",
+        "nextLevel": [
+            {
+                "criteriaDescription": "###Text description of a simple NPC interaction required to move to this node###",
+                "index": ###Level Number (Integer) of the next node###
+            },
+            ###Repeat for all nextLevel options###
+        ]
+    },
+    ###Repeat for all levels###
+]
+```
+
+---
+
+**YOU MUST STRICTLY FOLLOW THESE CONSTRAINTS:**
+
+- Each Ending node must be reachable from the initial state.  
+- Each Ending node must have at least **3 different paths** leading to it from the initial node.
+- You must **NOT use third-person pronouns** (he, she, they) in ANY "storyline" text. Write in second person ("you" form).
+- **Ground the storylines deeply in the setting**, highlighting cultural, environmental, technological, or fantastical details that make the world feel fresh and unique.
+- **Include the original story as one of the possible paths.**
+- There must be **2 or 3 narrative nodes that are common across ALL storylines**.  
+  These common nodes must be significant story beats, but **they must NOT be consecutive**.
+- For `criteriaDescription`, it must involve **simple interaction with NPCs** like "talk to a friendly NPC" or "defeat an enemy NPC".  
+  If there is no interaction required, write "no criteria".
+- **Story Arc Progression:** If the input story arc type is compound (e.g., "Rise-Fall-Rise"), clearly structure the levels so that the narrative beats match the "rise" → "fall" → "rise" mood progression.
+- **LevelIndex must be unique** throughout the full list.
+- **StoryArcs must be correctly labeled** in each level, corresponding to their position in the story arc structure.
+- If the current level is the ending level, the nextLevel's index should be -1, and only contains that index
+- Don't have more than 27 nodes
+---
+
+**Example Input:**  
+Short Story Description: "a young girl, Red, who comes across a cunning wolf on the way to her grandmother's home. The wolf deceives both her and her grandmother and eats them"  
+Story Arc Type: "Rise-Fall-Rise"  
+Minimum number of ending: 1
+
+---
+
+**Example Output:**  
+```json
+"levelList": [
+    {
+        "storyArc": "Rise",
+        "levelIndex": 1,
+        "storyline": "You step into the cool morning mist carrying a wicker basket, your mother's instructions fresh in your mind: stay on the path and avoid strangers.",
+        "nextLevel": [
+            {
+                "criteriaDescription": "Talk to the flower seller",
+                "index": 2
+            },
+            {
+                "criteriaDescription": "Ignore the flower seller",
+                "index": 3
+            }
+        ]
+    },
+    {
+        "storyArc": "Rise",
+        "levelIndex": 2,
+        "storyline": "You admire a colorful bouquet offered by a smiling woman and learn of a shortcut through the woods.",
+        "nextLevel": [
+            {
+                "criteriaDescription": "Take the shortcut",
+                "index": 4
+            },
+            {
+                "criteriaDescription": "Stick to the main path",
+                "index": 5
+            }
+        ]
+    },
+    ### More nodes following story arcs, common beats, and multiple endings ###
+]
+```
