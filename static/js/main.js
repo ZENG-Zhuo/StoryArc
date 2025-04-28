@@ -1,5 +1,7 @@
 $(document).ready(function () {
-    $('#generateCharacters').click(handleGenerateCharacters);
-    $('#proceedToCharacters').click(handleProceedToCharacters);
-    $('#generateGame').click(handleGenerateGame);
+  populateDropdown("storyArc", storyArcOptions);
+  populateDropdown("endingCount", endingCountOptions);
+  $("#visualizeStory").click(handleVisualizeStory);
+  $("#proceedToCharacters").click(handleProceedToCharacters);
+  $("#generateGame").click(handleGenerateGame);
 });

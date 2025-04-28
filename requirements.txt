@@ -5,3 +5,5 @@ python-dotenv
 langchain-core
 langchain-openai
 pydantic
+flask
+pillow

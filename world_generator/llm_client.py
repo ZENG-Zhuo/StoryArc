@@ -169,265 +169,97 @@ class GPTClient:
     def dummy_gen_story_node(self, story_description, story_arc, num_endings):
         '''A dummy method for generating a story node. For integration testing'''
         data = '''```json
-                [
-                    {
-                        "storyArc": "Rise",
-                        "nodes": [
-                            {
-                                "nodeID": "1.1.1",
-                                "storyline": "A young hero named Elian receives a transmission from a mysterious figure known as the Oracle, urging him to harness ancient powers in the skies above Neo-Silva City.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "1.2.1",
-                                        "criteriaDescription": "Talked to the Oracle"
-                                    },
-                                    {
-                                        "nodeID": "1.2.2",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "1.2.1",
-                                "storyline": "Elian learns about the existence of the Aeons, powerful beings tethered to the energy of the city.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "1.3.1",
-                                        "criteriaDescription": "Gained knowledge from the Oracle"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "1.2.2",
-                                "storyline": "Elian decides to explore the Neon Spire to find a rumored Aeon who will lend him strength.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "1.3.2",
-                                        "criteriaDescription": "Reached the Neon Spire"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "1.3.1",
-                                "storyline": "Elian awakens his latent power of summoning and calls forth the Aeon of Storms, who joins him for his quest.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "1.4.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "1.3.2",
-                                "storyline": "Upon arrival, Elian encounters an enigmatic hacker named Cyra who reveals a secret about the city.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "1.4.1",
-                                        "criteriaDescription": "Gained Cyra's trust"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "1.4.1",
-                                "storyline": "Elian and Cyra team up, uncovering the corruption of the ruling corporate syndicate, the Omnilectric Collective.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "1.5.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "1.5.1",
-                                "storyline": "Joining forces with rebellious factions, they plan to lead a strike against Omnilectric to restore freedom to their city.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "1.6.1",
-                                        "criteriaDescription": "Join forces with rebels"
-                                    },
-                                    {
-                                        "nodeID": "1.6.2",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "storyArc": "Fall",
-                        "nodes": [
-                            {
-                                "nodeID": "2.1.1",
-                                "storyline": "As the strike begins, the plan falls apart when a betrayal from within their ranks leads to heavy casualties.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "2.2.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "2.1.2",
-                                "storyline": "Elian realizes that the information given by Cyra was manipulated by the Omnilectric Collective to sabotage their efforts.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "2.2.2",
-                                        "criteriaDescription": "Confronted Cyra"
-                                    },
-                                    {
-                                        "nodeID": "2.2.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "2.2.1",
-                                "storyline": "In despair, Elian confronts the remnants of the rebellion and must decide whether to accept defeat or fight another day.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "2.3.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "2.2.2",
-                                "storyline": "Upon confronting Cyra, it is revealed that she was double-crossing him under duress, forcing Elian to choose between forgiveness or revenge.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "2.3.2",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "2.3.1",
-                                "storyline": "The shattered alliance reassembles, and Elian decides to pursue the final piece of the original plan: find the forgotten Aeon that can change the course of the conflict.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "2.4.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "2.3.2",
-                                "storyline": "Elian, driven by anger, decides to infiltrate the Omnilectric headquarters to gather intel and expose the truths behind the corruption.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "2.4.2",
-                                        "criteriaDescription": "Successfully infiltrated"
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "storyArc": "Rise",
-                        "nodes": [
-                            {
-                                "nodeID": "3.1.1",
-                                "storyline": "Elian discovers the hidden entrance to the Aeon Shrine, where they hope to find the ancient Aeon of Light, who represents rebirth.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.2.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.1.2",
-                                "storyline": "With allies gathered, including Cyra, the heroes raise their spirits to confront their fears and embrace the power of the Aeon.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.2.2",
-                                        "criteriaDescription": "United as a team"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.2.1",
-                                "storyline": "Elian encounters the trial of darkness where he must face his own fears embodied by shadowy figures from his past.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.3.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.2.2",
-                                "storyline": "Through teamwork, the group faces down the manifestations of doubt and emerges stronger than ever.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.3.2",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.3.1",
-                                "storyline": "Elian retrieves the Aeon of Light, who empowers him and the allies to reach their full potential.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.4.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.3.2",
-                                "storyline": "United under the banner of hope, Elian and Cyra lead their forces to battle against the Omnilectric Collective in a final confrontation.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.4.2",
-                                        "criteriaDescription": "Gathered enough allies"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.4.1",
-                                "storyline": "Triumphant, Elian utilizes new powers to dismantle the Omnilectric forces in an epic showdown, restoring peace to Neo-Silva City.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.5.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.4.2",
-                                "storyline": "With tenacity and resolve, Elian defeats the mega-corp and leads the populace into a new era of freedom and opportunity.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.5.2",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.5.1",
-                                "storyline": "The city celebrates a newfound sense of unity and hope, as Elian emerges as a renowned hero, leading the next chapter of Neo-Silva.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.6.1",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            },
-                            {
-                                "nodeID": "3.5.2",
-                                "storyline": "Elian dedicates himself to rebuilding the city amidst the vibrant glow of neon lights, determined to forge a legacy of peace.",
-                                "nextNode": [
-                                    {
-                                        "nodeID": "3.6.2",
-                                        "criteriaDescription": "No criteria"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
+[
+    {
+        "storyArc": "Rise-Fall-Rise",
+        "nodes": [
+            {
+                "nodeID": "1",
+                "storyline": "Red leaves her colorful, folklore-rich village carrying a basket of herbal breads and sweet juniper wine for Grandmother, who lives deep in the Singing Pines—an ancient forest known for its whispering trees and time-bending paths.",
+                "nextNode": [
+                    { "nodeID": "2", "criteriaDescription": "no criteria" }
                 ]
+            },
+            {
+                "nodeID": "2",
+                "storyline": "Red meets a curious fox spirit who warns her: the forest paths are shifting today, and she should not talk to strangers. Red thanks the spirit and continues with caution.",
+                "nextNode": [
+                    { "nodeID": "3", "criteriaDescription": "talk to the fox spirit" }
+                ]
+            },
+            {
+                "nodeID": "3",
+                "storyline": "At a fork under a whispering tree, Red encounters a charming wolf dressed in a traveling cloak. The wolf asks where Red is headed and offers a 'shortcut' through the Duskroot Trail—a rarely used path said to echo past footsteps.",
+                "nextNode": [
+                    { "nodeID": "4", "criteriaDescription": "talk to the wolf" },
+                    { "nodeID": "5", "criteriaDescription": "refuse to talk to the wolf and take the main trail" }
+                ]
+            },
+            {
+                "nodeID": "4",
+                "storyline": "Red trusts the wolf and takes the shortcut. The path disorients her, and strange forest illusions lure her into losing time. Meanwhile, the wolf reaches Grandmother’s cottage first.",
+                "nextNode": [
+                    { "nodeID": "6", "criteriaDescription": "no criteria" }
+                ]
+            },
+            {
+                "nodeID": "5",
+                "storyline": "Red takes the main trail, passing by a shrine with runes glowing faintly. She prays briefly, and an owl guardian gifts her a pine-sigil for protection.",
+                "nextNode": [
+                    { "nodeID": "6", "criteriaDescription": "talk to the owl guardian" }
+                ]
+            },
+            {
+                "nodeID": "6",
+                "storyline": "Red arrives at the cottage. The door is slightly ajar. The cottage smells faintly of juniper but something feels wrong. Grandmother's shawl is on the floor.",
+                "nextNode": [
+                    { "nodeID": "7", "criteriaDescription": "enter the cottage quietly" },
+                    { "nodeID": "8", "criteriaDescription": "call out to Grandmother loudly" }
+                ]
+            },
+            {
+                "nodeID": "7",
+                "storyline": "Red sneaks in and sees the wolf in Grandmother’s clothing. She hides and notices Grandmother trapped under the bed.",
+                "nextNode": [
+                    { "nodeID": "9", "criteriaDescription": "free Grandmother while distracting the wolf" },
+                    { "nodeID": "10", "criteriaDescription": "confront the wolf directly" }
+                ]
+            },
+            {
+                "nodeID": "8",
+                "storyline": "Red's loud voice alerts the wolf, who pounces. Red barely has time to scream before she’s trapped.",
+                "nextNode": [
+                    { "nodeID": "10", "criteriaDescription": "no criteria" }
+                ]
+            },
+            {
+                "nodeID": "9",
+                "storyline": "Red tosses a bread roll at the wolf, who turns, and pulls Grandmother free. Grandmother activates a protective hearth rune, and the wolf is expelled from the cottage in a burst of light.",
+                "nextNode": [
+                    { "nodeID": "11", "criteriaDescription": "no criteria" }
+                ]
+            },
+            {
+                "nodeID": "10",
+                "storyline": "The wolf overpowers Red and swallows both her and Grandmother. However, a nearby woodsman hears the commotion.",
+                "nextNode": [
+                    { "nodeID": "12", "criteriaDescription": "talk to the woodsman NPC" }
+                ]
+            },
+            {
+                "nodeID": "11",
+                "storyline": "With the wolf gone, Red and Grandmother enjoy the herbal breads in peace. The forest’s spirits bless Red for her bravery and cleverness.",
+                "nextNode": []
+            },
+            {
+                "nodeID": "12",
+                "storyline": "The woodsman defeats the wolf, cuts open its belly, and saves Red and Grandmother. They sew the wolf’s belly with nettle thorns, ensuring he never harms another soul.",
+                "nextNode": []
+            }
+        ]
+    }
+]
+
                 ```'''
         return data
 
