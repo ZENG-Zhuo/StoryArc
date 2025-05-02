@@ -1,14 +1,70 @@
-function extractCharacters(storyPrompt) {
-  return [
-    { name: "Character 1", prompt: "A brave knight with shining armor." },
-    { name: "Character 2", prompt: "A cunning rogue with a mysterious past." },
-    { name: "Character 3", prompt: "A wise wizard with a long beard." },
-    {
-      name: "The red",
-      prompt:
-        "Create an illustration of a young girl with a bright red cape...",
-    },
-  ];
+async function extractEntities() {
+  const graphJson = exportGraphToJson(gNodes, gLinks); // assumes this function exists
+
+  try {
+    const response = await fetch("/generate_entities", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(graphJson),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Server returned an error:", errorData);
+
+      const message =
+        errorData.error || response.statusText || "Unknown error occurred.";
+      $("#errorModalMessage").text(message);
+      $("#errorModal").modal("show");
+
+      return null;
+    }
+
+    const result = await response.json();
+    console.log("Received entity-enriched structure:", result);
+
+    const entries = [];
+
+    // Loop through all levels
+    if (Array.isArray(result.levelList)) {
+      result.levelList.forEach((level) => {
+        const entity = level.entity;
+
+        // Add all NPCs
+        if (entity && Array.isArray(entity.NPCList)) {
+          entity.NPCList.forEach((npc) => {
+            entries.push({
+              name: npc.NPCName,
+              prompt: npc.description,
+            });
+          });
+        }
+
+        // Add all Items
+        if (entity && Array.isArray(entity.itemList)) {
+          entity.itemList.forEach((item) => {
+            entries.push({
+              name: item.itemName,
+              prompt: item.description,
+            });
+          });
+        }
+      });
+    }
+
+    return entries;
+  } catch (err) {
+    console.error("Request failed:", err);
+
+    $("#errorModalMessage").text(
+      "Failed to connect to entity generation service."
+    );
+    $("#errorModal").modal("show");
+
+    return null;
+  }
 }
 
 function displayCharacters(characters) {

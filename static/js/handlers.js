@@ -20,31 +20,56 @@ async function handleVisualizeStory() {
     console.log(graph);
     const { nodes, edges } = graph;
 
-    // Hide the spinner
+    // Hide the spinner and show the graph
     $("#loadingSpinner").hide();
     $("#graphContainer").show();
 
     visualizeGraph(nodes, edges);
   } catch (error) {
     console.error("Error visualizing story graph:", error);
+
     $("#loadingSpinner").hide();
-    alert("Failed to visualize story graph.");
+
+    // Show the error message in the modal
+    $("#errorModalMessage").text(
+      "Failed to visualize story graph: " + error.message
+    );
+    $("#errorModal").modal("show");
+
+    $("#stage1").show();
+    $("#stage1b").hide();
   }
 }
 
-function handleProceedToCharacters() {
-  const storyPrompt = $("#storyPrompt").val();
-  const storyArc = $("#storyArc").val();
-  const endingCount = parseInt($("#endingCount").val(), 10);
+async function handleProceedToSpriteSelection() {
+  const validation = validateGraph();
 
-  const characters = extractCharacters(storyPrompt);
-  displayCharacters(characters);
+  if (
+    !validation.isAcyclic ||
+    !validation.isConnected ||
+    !validation.hasSingleStartNode
+  ) {
+    // Show error modal with the message
+    $("#errorModalMessage").text(validation.message);
+    $("#errorModal").modal("show");
+    return;
+  }
 
-  console.log("Selected Story Arc:", storyArc);
-  console.log("Number of Endings:", endingCount);
-
+  // Show stage 2 and spinner
   $("#stage1b").hide();
   $("#stage2").show();
+  $("#loadingSpinner2").show();
+
+  try {
+    const characters = await extractEntities();
+    displayCharacters(characters);
+  } catch (err) {
+    console.error("Failed to extract characters:", err);
+    alert("An error occurred while extracting characters.");
+  } finally {
+    // Always hide the spinner
+    $("#loadingSpinner2").hide();
+  }
 }
 
 function handleGenerateGame() {

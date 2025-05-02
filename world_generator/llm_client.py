@@ -126,6 +126,7 @@ class GPTClient:
             # clean the response
             res_content = self.clean_json(res_content)
             if self.verify_response_structure(StoryStructure, res_content):
+                print(res_content)
                 return res_content
             print("Something went wrong. Retrying...")
         print("Reaching max attempts.")
