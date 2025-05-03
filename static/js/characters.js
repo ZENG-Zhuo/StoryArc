@@ -1,0 +1,88 @@
+function extractCharacters(storyPrompt) {
+  return [
+    { name: "Character 1", prompt: "A brave knight with shining armor." },
+    { name: "Character 2", prompt: "A cunning rogue with a mysterious past." },
+    { name: "Character 3", prompt: "A wise wizard with a long beard." },
+    {
+      name: "The red",
+      prompt:
+        "Create an illustration of a young girl with a bright red cape...",
+    },
+  ];
+}
+
+function displayCharacters(characters) {
+  const charactersList = $("#charactersList");
+  charactersList.empty();
+
+  characters.forEach((character) => {
+    const characterCard = $(`
+            <div class="col-md-4 mb-4">
+                <div class="card" style="background-color: #393E46; color: #EEEEEE;">
+                    <div class="card-body">
+                        <h5 class="card-title">${character.name}</h5>
+                        <p>${character.prompt}</p>
+                        <button class="btn btn-primary generateSprite" data-prompt="${character.prompt}">Generate Sprite</button>
+                        <button class="btn btn-success regenerateSprite" style="display:none;">Regenerate Sprite</button>
+                        <img src="" alt="${character.name} sprite" style="display:none; width: 150px; height: 150px;" class="sprite-image">
+                        <i class="fa-solid fa-spinner loading-icon" style="display:none; font-size: 24px; color: #00ADB5;"></i>
+                    </div>
+                </div>
+            </div>
+        `);
+    charactersList.append(characterCard);
+  });
+
+  // Generate sprite button click event
+  $(".generateSprite").click(function () {
+    const prompt = $(this).data("prompt");
+    generateSprite(this, prompt);
+  });
+
+  // Regenerate sprite button click event
+  $(".regenerateSprite").click(function () {
+    const prompt = $(this).siblings(".generateSprite").data("prompt");
+    generateSprite(this, prompt);
+  });
+
+  $("#generateGame").show();
+}
+
+// Function to handle sprite generation
+function generateSprite(button, prompt) {
+  const loadingIcon = $(button).siblings(".loading-icon");
+  loadingIcon.show().addClass("fa-spin"); // Show and spin the loading icon
+
+  // Call the API to generate the image
+  fetch("/generate_image", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ prompt: prompt }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Image generation failed: " + response.statusText);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      loadingIcon.hide().removeClass("fa-spin"); // Hide and stop spinning the loading icon
+      if (data.imageUrl) {
+        const spriteImage = $(button).siblings(".sprite-image");
+        spriteImage.attr("src", data.imageUrl).show();
+        if (!$(button).hasClass("regenerateSprite")) {
+          $(button).hide(); // Hide the Generate Sprite button
+          $(button).siblings(".regenerateSprite").show(); // Always show the Regenerate Sprite button
+        }
+      } else {
+        alert("Image generation failed: No image URL returned.");
+      }
+    })
+    .catch((error) => {
+      loadingIcon.hide().removeClass("fa-spin"); // Hide and stop spinning the loading icon on error
+      console.error("Error:", error);
+      alert("An error occurred while generating the image: " + error.message);
+    });
+}
