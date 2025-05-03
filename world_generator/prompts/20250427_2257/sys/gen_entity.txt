@@ -1,8 +1,10 @@
 **INSTRUCTION:**  
-Your task is to generate a **full JSON game setting** based on the following **INPUT**.
+Your task is to generate a **full JSON game data** from a partial `"levelList"` input.
+
+---
 
 **Input Format:**  
-You will be given a partial `"levelList"` following this structure:
+You are given a partial JSON input like this:
 ```json
 "levelList": [
     {
@@ -35,66 +37,147 @@ You will be given a partial `"levelList"` following this structure:
             }
         ]
     }
-    // ... more levels
 ]
 ```
 
-**Your Task:**  
-Based on this input, complete the full JSON by adding the **missing fields** inside each level, specifically under an `"entity"` object.  
-Each `"entity"` should include:
+---
 
-- `NPCList` (with characters, stats, dialogue)  
-- `itemList` (optional, only if appropriate)  
-- `doorList` (optional, only if appropriate)  
+**Your Output Format Must Be:**  
+- Add a **`playerData`** field at the top level.  
+- Each node inside `"levelList"` must keep its original fields and have an additional `"entity"` field appended.
+- `"entity"` contains:
+  - `tileData` (random fitting color values)
+  - `NPCList` (one or more NPCs with name, description, dialogue, stats, friendliness, and optionally a `door`)
+  - `itemList` (optional, only if it fits naturally)
+  - `doorList` (must correspond to each `nextLevel`'s `index`)
+- If a path leads to an ending (like menu/black screen), use `-1` as the `doorList.index`.
+
+---
 
 **Rules and Requirements:**  
-1. Each `doorList`'s `index` must exactly match one of the `nextLevel`'s `index`.  
-2. Use `-1` as the `index` when a path leads to an ending or menu instead of another level.  
-3. NPCs should fit the story — give them names, descriptions, health, attack, friend/enemy status, and fun dialogue lines.  
-4. Items are optional but should fit naturally if included. Items can modify attack, health, or be collectibles.  
-5. Not all levels need doors or items — use them only where they make sense.  
-6. Keep gameplay balanced (no overpowered NPCs or items unless justified by the story).  
-7. You can be creative and add extra flavor through the NPCs and environment descriptions.  
-8. Follow the given `"storyArc"`, `"levelIndex"`, and `"storyline"`, but you can expand with fitting details if needed.
+1. `doorList`'s indices must exactly match the `nextLevel`'s indices.  
+2. Each level can have 0 or more NPCs and items.  
+3. Each NPC must have `NPCName`, `description`, `dialogue`, `attack`, `health`, `friend`, and optionally `door`.  
+4. `door` inside an NPC is optional. If present, it should also match a `nextLevel.index` or `-1`.  
+5. Make the environment colorful and the gameplay balanced.  
+6. `itemList` is optional but encouraged if fitting.
+7. Tile colors can be creatively chosen to match the scene vibe.
+8. Keep the story natural and immersive — expand only where it fits.
 
-**Example for Added Fields:**  
+---
+
+**Example Output:**  
 ```json
-"entity": {
-    "tileData": {
-        "r": 0.5,
-        "g": 0.8,
-        "b": 0.2,
-        "a": 1.0
+{
+    "playerData": {
+        "health": 100,
+        "attack": 0,
+        "description": "A young wizard with a flowing red hat.",
+        "spriteAddress": "Sprites/RedHat"
     },
-    "NPCList": [
+    "levelList": [
         {
-            "NPCName": "Old Man Elric",
-            "description": "A mysterious hermit who knows the forest well.",
-            "dialogue": ["The forest tests all who enter."],
-            "attack": 1,
-            "hasRangedAttack": false,
-            "health": 12,
-            "friend": true,
-            "door": 2
-        }
-    ],
-    "itemList": [
-        {
-            "itemName": "Traveler's Map",
-            "description": "A map of the nearby paths.",
-            "pickable": true,
-            "attack": 0,
-            "health": 0
-        }
-    ],
-    "doorList": [
-        {
-            "index": 2,
-            "spriteAddress": "Sprites/Door"
+            "storyArc": "Rise",
+            "levelIndex": 1,
+            "storyline": "You find yourself at the edge of a dense, foggy forest. An old man leans on a wooden staff near a worn signpost.",
+            "nextLevel": [
+                {
+                    "criteriaDescription": "Take the left path",
+                    "index": 2
+                },
+                {
+                    "criteriaDescription": "Take the right path",
+                    "index": 3
+                }
+            ],
+            "entity": {
+                "tileData": {
+                    "r": 0.2,
+                    "g": 0.4,
+                    "b": 0.6,
+                    "a": 1.0
+                },
+                "NPCList": [
+                    {
+                        "NPCName": "Old Man Elric",
+                        "description": "A mysterious hermit who knows the forest well. Wears a tattered cloak and has a long white beard.",
+                        "dialogue": [
+                            "The forest tests all who enter.",
+                            "Choose your path wisely."
+                        ],
+                        "attack": 2,
+                        "hasRangedAttack": true,
+                        "health": 10,
+                        "friend": true
+                    }
+                ],
+                "itemList": [
+                    {
+                        "itemName": "Traveler's Map",
+                        "description": "A rough sketch of the forest paths. Seems useful.",
+                        "pickable": true,
+                        "attack": 0,
+                        "health": 0
+                    }
+                ],
+                "doorList": [
+                    {
+                        "index": 2,
+                        "spriteAddress": "Sprites/Door"
+                    },
+                    {
+                        "index": 3,
+                        "spriteAddress": "Sprites/Door"
+                    }
+                ]
+            }
         },
         {
-            "index": 3,
-            "spriteAddress": "Sprites/Door"
+            "storyArc": "Rise",
+            "levelIndex": 2,
+            "storyline": "You venture deeper into the woods, guided by whispers.",
+            "nextLevel": [
+                {
+                    "criteriaDescription": "Follow the river",
+                    "index": 4
+                },
+                {
+                    "criteriaDescription": "Climb the hill",
+                    "index": 5
+                }
+            ],
+            "entity": {
+                "tileData": {
+                    "r": 0.1,
+                    "g": 0.5,
+                    "b": 0.1,
+                    "a": 1.0
+                },
+                "NPCList": [
+                    {
+                        "NPCName": "Whispering Spirit",
+                        "description": "An ethereal figure that gestures toward unseen paths.",
+                        "dialogue": [
+                            "The river sings the truth.",
+                            "The hill holds secrets."
+                        ],
+                        "attack": 1,
+                        "hasRangedAttack": false,
+                        "health": 8,
+                        "friend": true
+                    }
+                ],
+                "doorList": [
+                    {
+                        "index": 4,
+                        "spriteAddress": "Sprites/Door"
+                    },
+                    {
+                        "index": 5,
+                        "spriteAddress": "Sprites/Door"
+                    }
+                ]
+            }
         }
     ]
 }
