@@ -1,7 +1,9 @@
 import base64
 from io import BytesIO
+import os
+import uuid
 
-from flask import jsonify
+from flask import current_app, jsonify
 from SDAPIs import generate_pixel_image
 
 def generate_image_response(prompt):
@@ -11,9 +13,13 @@ def generate_image_response(prompt):
         return jsonify({'error': error}), 400
 
     if images and len(images) > 0:
-        buffered = BytesIO()
-        images[0].save(buffered, format="PNG")
-        img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-        return jsonify({'imageUrl': f"data:image/png;base64,{img_str}"})
+        # Generate unique filename
+        filename = f"{uuid.uuid4().hex}.png"
+        save_path = os.path.join(current_app.static_folder, 'imgs', filename)
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        images[0].save(save_path, format="PNG")
+
+        # Return only the relative URL path (frontend will prepend static prefix)
+        return jsonify({'imageUrl': f"imgs/{filename}"})
 
     return jsonify({'error': "No images found."}), 404
