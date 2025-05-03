@@ -1,0 +1,222 @@
+INSTRUCTION: Your task is to generate a JSON file for a game setting with unique and interesting storylines given the following INPUT OPTIONS:
+ 
+Follow the format in the example below, without duplicating its content.
+Input: "###Short Story Description###"
+List of Story Nodes:
+ 
+"levelList": [
+{
+"levelIndex": ###Unique node number as an integer for each node###,
+"storyArc": "###Corresponding story arc###",
+"storyline": "###Story line in this node###",
+"nextLevel": [
+{
+"index": "###next node index or -1 if this is an "END" node###"
+"criteriaDescription": "###Text description of the criteria needs to be satisfied in order to reach to this node from previous node###"
+},
+### Repeat for all other "nextLevel" ###
+],
+},
+{
+"levelIndex": ###Unique node number as an integer for each node###,
+"storyArc": "###Corresponding story arc###",
+"storyline": "###Story line in this node###",
+"nextLevel": [
+{
+"index": "###next node index or -1 if this is an "END" node###"
+"criteriaDescription": "###Text description of the criteria needs to be satisfied in order to reach to this node from previous node###"
+},
+### Repeat for all other "nextLevel" ###
+],
+},
+### Continue with remaining story arc and nodes ###
+]
+ 
+ 
+ 
+Output: A JSON file with the following information, but for now, just put this in text.
+ 
+{
+"playerData": {
+"name": "### Name of main character###"
+"health": ### Initial health of the main character, normally 100 ###
+"attack": ### Initial attack of the main character###
+"description": "###deacription of the main character###
+"spriteAddress": Sprites/###name of main character###"
+},
+"levelList": [
+{
+"levelIndex": ###levelIndex from input (integer)###,
+"storyArc": "###storyArc from input###",
+"storyline": "###storyline from input###",
+"nextLevel": [
+{
+"criteriaDescription": "###criteriaDescription from input###",
+"index": "###index from input###"
+}
+### Repeat for all nextLevel in input###
+]
+"entity": {
+"tileData": {
+"r": ### Design tile background color using RGB value based on storyline###,
+"g": ### Design tile background color using RGB value based on storyline###,
+"b": ### Design tile background color using RGB value based on storyline###,
+"a": ### Transparency of the tile based on storyline###
+},
+
+ "NPCList": [
+{
+"NPCName": ###Character 1 in Node if any###,
+"description": "###Description of Character###",
+"dialogue": [
+###List of potential dialogue from the storyline. Innovate as necessary to enrich the story###
+],
+"attack": ###Stat of the Character as appropriate; Considering the playability of the game###,
+"hasRangedAttack": ### boolean indicate attack mode. True if the NPC can attack from far ranged ###,
+"health": ###Stat of the Character as appropriate; Considering the playability of the game###,
+"friend": ### Boolean indicate whether the NPC is friendly or enemy ###,
+"door": ### if this NPC is relevant to the criteriaDescription, assign the corresponding index number. Otherwise, assign -1 ###
+},
+### Continue for the remaining NPC ###
+],
+"itemList": [
+{
+"itemName": "###Item 1 in Node if any###",
+"description": "###Description of item###",
+"pickable": ### Boolean indicates whether can pick up the item ###,
+"attack": ###Stat of the item as appropriate; Considering the playability of the game###,
+"health": ###Stat of the item as appropriate; Considering the playability of the game###,
+},
+### Continue for the remaining items ###
+],
+"doorList": [
+{
+"index": ### door index corresponding to nodes in nextLevel ###,
+"spriteAddress": "Sprites/Door"
+},
+### create a door for each node in nextLevel ###
+]
+}
+},
+### Repeat for all nodes in the input ###
+]
+]
+ 
+ 
+Example:
+Input: "a young girl, Red, who comes across a cunning wolf on the way to her grandmother's home. The wolf deceives both her and her grandmother and eats them"
+ 
+{
+"levelList": [
+{
+"levelIndex": 1,
+"storyArc": "Rise",
+"storyline": "Red receives a silk-wrapped basket containing a medicinal mushroom cake and a sealed letter from the village elder to deliver to her grandmother in the Whispering Grove.",
+"nextLevel": [
+{
+"index": 2,
+"criteriaDescription": "Talked to village elder"
+},
+{
+"index": 3,
+"criteriaDescription": "Picked up the basket"
+}
+]
+},
+{
+"levelIndex": 2,
+"storyArc": "Rise",
+"storyline": "Red is gifted a crimson cloak by a spirit fox, who warns of a 'shadow-tongued beast' that prowls the forest paths.",
+"nextLevel": [
+{
+"index": 4,
+"criteriaDescription": "Picked up the crimson cloak"
+}
+]
+}
+]
+}
+ 
+Output:
+{
+"playerData": {
+"name": "Red"
+"health": 100
+"attack": 3
+"description": "A female kid who wears a red hood###
+"spriteAddress": Sprites/Red"
+},
+"levelList": [
+{
+"levelIndex": 1,
+"storyArc": ""Rise",
+"storyline": "Red receives a silk-wrapped basket containing a medicinal mushroom cake and a sealed letter from the village elder to deliver to her grandmother in the Whispering Grove.",
+"nextLevel": [
+{
+"index": 2,
+"criteriaDescription": "Talked to village elder",
+},
+{
+"index": 3,
+"criteriaDescription": "Picked up the basket"
+}
+]
+"entity": {
+"tileData": {
+"r": 130,
+"g": 200,
+"b": 0,
+"a": 0
+},
+
+ "NPCList": [
+{
+"NPCName": "Village Elder",
+"description": "A female elder wearing white suits",
+"dialogue": [
+"Hi Red",
+"Can you please help me deliver this cake and letter to your grandmother?"
+],
+"attack": 0,
+"hasRangedAttack": False,
+"health": 10,
+"friend": True,
+"door": 2
+}
+],
+"itemList": [
+{
+"itemName": "Basket",
+"description": "A silk-wrapped basket containing a medicinal mushroom cake",
+"pickable": True,
+"attack": 0,
+"health":0
+},
+{
+"itemName": "Letter",
+"description": "A white envelop with some letter on the surface",
+"pickable": True,
+"attack": 0,
+"health": 0
+},
+{
+"itemName": "potion",
+"description": "A green potion",
+"pickable": True,
+"attack": 0,
+"health": 10
+}
+],
+"doorList": [
+{
+"index": 2,
+"spriteAddress": "Sprites/Door"
+},
+]
+}
+},
+### Repeat for all nodes in the input ###
+]
+]
+ 
+Now I want you to generate the full JSON file for me and I will provide the input in the next prompt

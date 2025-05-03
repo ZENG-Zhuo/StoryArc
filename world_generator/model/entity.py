@@ -33,10 +33,8 @@ class DoorModel(BaseModel):
     
     Attributes:
         index (int): Unique identifier for the door (-1 means return to menu)
-        spriteAddress (str): Path to the door's sprite
     """
     index: int
-    spriteAddress: str
 
 class ItemModel(BaseModel):
     """A model representing an item that can be found in the game world.
@@ -61,12 +59,10 @@ class PlayerDataModel(BaseModel):
         health (int): Current health points of the player
         attack (int): Base attack power of the player
         description (str): Physical description of the player
-        spriteAddress (str): Path to the player's sprite
     """
     health: int
     attack: int
     description: str
-    spriteAddress: str
 
 class NPCModel(BaseModel):
     """A model representing a non-player character (NPC) in the game.
@@ -85,7 +81,7 @@ class NPCModel(BaseModel):
     description: str
     dialogue: List[str]
     attack: int
-    hasRangedAttack: bool
+    hasRangedAttack: Optional[bool]
     health: int
     friend: bool
     door: Optional[int]
