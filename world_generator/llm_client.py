@@ -2,6 +2,7 @@
 
 import os
 import json
+from json import JSONDecodeError
 from pathlib import Path
 # from openai import OpenAI
 # from openai.types import OpenAIError,\
@@ -20,7 +21,7 @@ from world_generator.model.entity import GameStructure
 load_dotenv()
 
 CURRENT_PROMPT_VERSION = '20250502_2049'
-MAX_ATTEMPT = 1 # retry calling LLM if it fails
+MAX_ATTEMPT = 2 # retry calling LLM if it fails
 
 class Formatter:
     '''A class for formatting the input to the LLM'''
@@ -162,6 +163,7 @@ class GPTClient:
         '''A method for verifying the response structure'''
         try:
             # print("Raw response:", data)  # Debug print
+            # print(f"the data type is {type(data)}")
             json_data = json.loads(data)
             # print(f"the json_data type is {type(json_data)}")
             dataclass.from_dict(json_data)
@@ -170,6 +172,10 @@ class GPTClient:
             print("❌ Validation failed:")
             print(e.json(indent=2))
             print(f"the raw data is {data}")
+            return False
+        except JSONDecodeError as e:
+            print("❌ JSON decoding failed:")
+            print(e)
             return False
         return True
 
