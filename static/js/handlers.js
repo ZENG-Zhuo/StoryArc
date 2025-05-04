@@ -40,7 +40,7 @@ async function handleVisualizeStory() {
     $("#stage1b").hide();
   }
 }
-
+let debugV = {};
 async function handleProceedToSpriteSelection() {
   const validation = validateGraph();
 
@@ -58,6 +58,8 @@ async function handleProceedToSpriteSelection() {
   // Show stage 2 and spinner
   $("#stage1b").hide();
   $("#stage2").show();
+  const charactersList = $("#charactersList");
+  charactersList.empty();
   $("#loadingSpinner2").show();
 
   try {
@@ -74,11 +76,52 @@ async function handleProceedToSpriteSelection() {
 
 function handleGenerateGame() {
   $("#stage2").hide();
-  $("#stage3").show();
-  setTimeout(() => {
-    alert("Game generation complete!");
-    $("#stage3").hide();
-    $("#stage1").show();
-    $("#storyPrompt").val("");
-  }, 2000);
+  $("#stage3").show(); // Show Unity container (already present in #stage3)
+
+  let updatedJson;
+  try {
+    updatedJson = injectSpritesIntoJson();
+  } catch (err) {
+    alert("Failed to generate game data: " + err.message);
+    return;
+  }
+
+  fetch("/save_generated_json", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedJson),
+  })
+    .then((response) => response.json())
+    .then((result) => {
+      if (result.status === "success") {
+        console.log("Saved file URL:", result.fileUrl);
+
+        // ✅ Unity game loads only after save is successful
+        LoadUnityGame(); // Uses your existing loader logic
+      } else {
+        showError("Error saving game data: " + result.error);
+        resetToInitialState();
+      }
+    })
+    .catch((error) => {
+      console.error("Fetch error:", error);
+      alert("Error sending data to backend: " + error.message);
+      resetToInitialState();
+    });
+}
+
+function resetToInitialState() {
+  $("#stage3").hide();
+  $("#stage1").show();
+  $("#storyPrompt").val("");
+}
+
+function showSuccess(msg) {
+  alert(msg); // Customize if you have a styled toast/alert
+}
+
+function showError(msg) {
+  alert(msg);
 }

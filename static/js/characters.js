@@ -1,4 +1,4 @@
-const currentOriginalJSON = null;
+let currentOriginalJSON = null;
 
 async function extractEntities() {
   const graphJson = exportGraphToJson(gNodes, gLinks); // assumes this function exists
@@ -30,7 +30,7 @@ async function extractEntities() {
     console.log("Received entity-enriched structure:", result);
 
     const entries = [];
-
+    console.log("playerData", result.playerData);
     // ➕ Extract playerData
     if (result.playerData) {
       entries.push({
@@ -39,12 +39,15 @@ async function extractEntities() {
         type: "Player",
       });
     }
+    console.log("Added Players", entries);
+
+    console.log("levelList", result.levelList);
 
     // Extract level entities
     if (Array.isArray(result.levelList)) {
       result.levelList.forEach((level) => {
         const entity = level.entity;
-
+        console.log("entity", entity);
         // NPCs
         if (entity && Array.isArray(entity.NPCList)) {
           entity.NPCList.forEach((npc) => {
@@ -132,6 +135,7 @@ function displayCharacters(characters) {
     `);
 
     charactersList.append(characterCard);
+    debugV.charactersList = charactersList;
   });
 
   $(".generateSprite").click(function () {
@@ -207,30 +211,59 @@ function injectSpritesIntoJson() {
       const player = originalJson.playerData;
       const key = `Player:${player.name}:${player.description}`;
       if (spriteMap[key]) {
-        player.spriteUrl = spriteMap[key];
+        player.spriteAddress = spriteMap[key];
+      }
+      if (player.description) {
+        delete player.description; // Remove description if it exists
+      }
+
+      if (player.name) {
+        delete player.name; // Remove name if it exists
       }
     }
 
     // ✅ Inject NPC and Item sprites
     for (const level of originalJson.levelList) {
       const entity = level.entity;
-
-      if (entity && Array.isArray(entity.NPCList)) {
-        entity.NPCList.forEach((npc) => {
-          const key = `NPC:${npc.NPCName}:${npc.description}`;
-          if (spriteMap[key]) {
-            npc.spriteUrl = spriteMap[key];
+      level.doorList = entity.doorList || []; // Ensure doorList exists
+      level.tileData = entity.tileData
+        ? {
+            r: (entity.tileData.r || 0) / 255,
+            g: (entity.tileData.g || 0) / 255,
+            b: (entity.tileData.b || 0) / 255,
+            a: entity.tileData.a || 1,
           }
-        });
-      }
+        : {}; // Ensure tileData exists
 
-      if (entity && Array.isArray(entity.itemList)) {
-        entity.itemList.forEach((item) => {
-          const key = `Item:${item.itemName}:${item.description}`;
-          if (spriteMap[key]) {
-            item.spriteUrl = spriteMap[key];
-          }
-        });
+      if (entity) {
+        if (Array.isArray(entity.NPCList)) {
+          level.NPCList = entity.NPCList;
+          level.NPCList.forEach((npc) => {
+            const key = `NPC:${npc.NPCName}:${npc.description}`;
+            if (spriteMap[key]) {
+              npc.spriteAddress = spriteMap[key];
+            }
+          });
+        }
+
+        if (Array.isArray(entity.itemList)) {
+          level.itemList = entity.itemList;
+          level.itemList.forEach((item) => {
+            const key = `Item:${item.itemName}:${item.description}`;
+            if (spriteMap[key]) {
+              item.spriteAddress = spriteMap[key];
+            }
+          });
+        }
+
+        // Optionally delete the entity layer
+        delete level.entity;
+        if (level.nextLevel) {
+          delete level.nextLevel;
+        }
+        if (level.storyArc) {
+          delete level.storyArc;
+        }
       }
     }
 

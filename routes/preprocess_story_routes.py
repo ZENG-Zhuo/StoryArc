@@ -46,9 +46,18 @@ def generate_entities():
 
     try:
         enriched = story_generator.gen_entity(story_node)
+
+        # If enriched is a JSON string, parse it
+        if isinstance(enriched, str):
+            try:
+                enriched = json.loads(enriched)  # Convert JSON string to Python dict
+            except json.JSONDecodeError as e:
+                return jsonify({"error": f"Invalid JSON string returned: {str(e)}"}), 500
+
         if enriched:
-            return jsonify(enriched)
+            return jsonify(enriched)  # Flask will turn this dict into a JSON response
         else:
             return jsonify({"error": "Entity generation failed after retries"}), 500
+
     except Exception as e:
         return jsonify({"error": f"Internal error during generation: {str(e)}"}), 500

@@ -2,7 +2,7 @@ import os
 import json
 from flask import Blueprint, request, jsonify, current_app, send_from_directory, session
 
-game_bp = Blueprint('game', __name__)
+game_bp = Blueprint('game_bp', __name__)
 
 @game_bp.route('/save_generated_json', methods=['POST'])
 def save_generated_json():
@@ -40,6 +40,16 @@ def get_generated_json():
 
     file_path = os.path.join(folder_path, filename)
     if not os.path.exists(file_path):
+        print("JSON not found for session: " + session["session_id"])
+        
+        # hacking here need to remove this in real production:
+        filename = f'game_data_9d468cb5-6f8d-4310-a2ad-8faac044e301.json'
+        folder_path = os.path.join(current_app.static_folder, 'json')
+
+        file_path = os.path.join(folder_path, filename)
+        
+        return send_from_directory(folder_path, filename)
+        
         return jsonify({'error': 'Generated JSON file not found for this session'}), 404
 
     return send_from_directory(folder_path, filename)

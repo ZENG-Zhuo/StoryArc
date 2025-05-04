@@ -4,4 +4,5 @@ $(document).ready(function () {
   $("#visualizeStory").click(handleVisualizeStory);
   $("#proceedToSpriteSelection").click(handleProceedToSpriteSelection);
   $("#generateGame").click(handleGenerateGame);
+  initUnity();
 });

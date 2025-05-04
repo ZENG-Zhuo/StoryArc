@@ -2,10 +2,12 @@ import uuid
 from flask import Flask, render_template, session
 from routes.image_routes import image_bp
 from routes.preprocess_story_routes import story_bp
+from routes.game_routes import game_bp
 
 app = Flask(__name__)
 app.register_blueprint(image_bp)
 app.register_blueprint(story_bp)
+app.register_blueprint(game_bp)
 
 app.secret_key = 'non secret key'
 
