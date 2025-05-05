@@ -20,7 +20,7 @@ from world_generator.model.entity import GameStructure
 
 load_dotenv()
 
-CURRENT_PROMPT_VERSION = '20250504_1744'
+CURRENT_PROMPT_VERSION = '20250505_1206'
 MAX_ATTEMPT = 2 # retry calling LLM if it fails
 
 class Formatter:
