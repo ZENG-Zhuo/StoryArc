@@ -43,7 +43,7 @@ def get_generated_json():
         print("JSON not found for session: " + session["session_id"])
         
         # hacking here need to remove this in real production:
-        filename = f'game_data_9d468cb5-6f8d-4310-a2ad-8faac044e301.json'
+        filename = f'game_data_example.json'
         folder_path = os.path.join(current_app.static_folder, 'json')
 
         file_path = os.path.join(folder_path, filename)

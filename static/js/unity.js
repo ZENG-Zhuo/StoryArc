@@ -25,18 +25,23 @@ function initUnity() {
     updateBannerVisibility();
   }
 
-  var buildUrl = "/static/Unity/Build";
-  var loaderUrl = buildUrl + "/Output.loader.js";
+  var buildUrl = "static/Unity/Build";
+  var loaderUrl = buildUrl + "/Unity.loader.js";
   config = {
-    dataUrl: buildUrl + "/Output.data",
-    frameworkUrl: buildUrl + "/Output.framework.js",
-    codeUrl: buildUrl + "/Output.wasm",
+    arguments: [],
+    dataUrl: buildUrl + "/Unity.data",
+    frameworkUrl: buildUrl + "/Unity.framework.js",
+    codeUrl: buildUrl + "/Unity.wasm",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "DefaultCompany",
     productName: "LittleRedDemo",
     productVersion: "1.0",
     showBanner: unityShowBanner,
   };
+
+  // Optional config flags:
+  // config.devicePixelRatio = 1; // Uncomment to lower canvas resolution on mobile
+  // config.autoSyncPersistentDataPath = true; // Uncomment to enable persistent data syncing
 
   if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
     var meta = document.createElement("meta");
@@ -55,7 +60,6 @@ function initUnity() {
 
   var script = document.createElement("script");
   script.src = loaderUrl;
-  script.onload = () => {};
   document.body.appendChild(script);
 }
 
