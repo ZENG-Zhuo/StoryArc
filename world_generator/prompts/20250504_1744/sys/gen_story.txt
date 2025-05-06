@@ -3,7 +3,7 @@ INSTRUCTION: Your task is to generate a JSON file for a game setting with unique
 Input Format:
 Short Story Description / Setting: "###Story Description###"
 Story Arc Type: ###One of these six arcs: "Rise", "Fall", "Fall-Rise", "Rise-Fall", "Rise-Fall-Rise", "Fall-Rise-Fall"
-Minimum number of ending: ###An integer###
+Number of ending: ###An integer###
  
 Output: A JSON file that contains the story following story arc.
 "levelList": [
@@ -35,24 +35,27 @@ Output: A JSON file that contains the story following story arc.
 ]
  
 YOU MUST STRICTLY FOLLOW THESE CONSTRAINTS:
-	1. If the story node has reached the end of the story ("END" node), the "index" within "nextLevel" must be marked as "-1" as an integer.
+	1. If the story node has reached the end of the story ("END" node), the "index" within "nextLevel" must be marked as "-1" as an integer. The NUMBER of "END" node MUST BE the same as required in the INPUT "number of ending". 
 	2. All node MUST be reachable from initial state. In other words, if we start from node with index 1, then following the choices in "nextLevel", it should be able to reach any one of the end node with index "-1".
-	3. The graph formed by story nodes and edges must be a DAG
+	3. The graph formed by story nodes and edges must be a DAG.
 	4. For each path from the initial node to the end node, it must follow the story arc defined in the input.
 	5. "END" node must has an enemy NPC to serve as the final boss.
-	6. No matter how many "end" nodes are required by the input. There must be at least 3 different paths to reach each end node from the initial node.
-	7. Do NOT use third person pronouns in ANY nodes.
+	6. No matter how many "end" nodes are required by the input. There MUST BE AT LEAST 3 different paths to reach EACH end node from the initial node.
+	7. Do NOT use pronouns in ANY storyline. 
 	8. Ground the storylines in the setting focusing on characteristics of the setting that are unique and help make the storylines interesting and novel. Those characteristics might include cultural elements like foods or clothing or music, strange physical properties, unique flora and fauna, unusual geographical features, and surprising technology.
 	9. Make sure that the original story appears as one of the resulting storylines (path).
-	10. THERE MUST BE 2 OR 3 NODES THAT ARE COMMON IN ALL THE STORYLINES. These must be the important narrative nodes in the story. The common beats must not be consecutive.
+	10. THERE MUST BE 2 OR 3 NODES THAT ARE COMMON IN ALL THE STORYLINES. These must be the important narrative nodes in the story. The common beats must not be consecutive and the "end" node.
 	11. For the criteriaDescription, it MUST be simple interaction with NPCs and/or items (only limited to pick up or use an item). In the most ideal situation, For example, talk to a friendly NPC, kill an enemy NPC, pick up an item, deliver the item to a NPC. Otherwise, you may put "no criteria". 
-	12. If there are more than one node within "nextNode", only ONE criteriaDescription could be "no criteria". 
+	12. If there are more than one node within "nextNode", AT MOST only ONE criteriaDescription could be "no criteria". 
 	13. "storyArc" can ONLY be either "Fall" or "Rise"
+	14. DO NOT generate an output for level with index -1.
+
+	
  
 Example Input:
 Short Story Description: "a young girl, Red, who comes across a cunning wolf on the way to her grandmother's home. The wolf deceives both her and her grandmother and eats them"
 Story Arc Type: "Rise-Fall-Rise"
-Minimum number of ending: 1
+Number of ending: 1
  
 Example Output:
 "levelList": [

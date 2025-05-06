@@ -64,7 +64,7 @@ Output: A JSON file with the following information, but for now, just put this i
 					"a": ### Transparency of the tile based on storyline###
 				}, 
 				
-"NPCList": [
+				"NPCList": [
 					{
 						"NPCName": ###Character 1 in Node if any###,
 						"description": "###Description on APPEARANCE of the csharacter, which will be used as an input for stable diffusion###",
@@ -75,7 +75,7 @@ Output: A JSON file with the following information, but for now, just put this i
 						"hasRangedAttack": ### Boolean indicate attack mode. True if the NPC can attack from far ranged ###,
 						"health": ###Stat of the Character as appropriate; Considering the playability of the game###,
 						"friend": ### Boolean indicate whether the NPC is friendly or enemy ###, 
-						"door": ### if this NPC is relevant to the criteriaDescription, assign the corresponding index number. Otherwise, assign -1 ###
+						"door": ### if this NPC is relevant to the criteriaDescription, assign the corresponding index number. Otherwise, assign 0 ###
 					}, 
 					### Continue for the remaining NPC ###
 				], 
@@ -103,9 +103,10 @@ Output: A JSON file with the following information, but for now, just put this i
 ]
 
 YOU MUST STRICTLY FOLLOW THESE CONSTRAINTS:
-	1. doorList MUST NOT be EMPTY. For each level in levelList
-	2. All description MUST be describing the APPEARANCE of the Character/Item 
-	3. DO NOT generate an output for level with index -1
+	1. doorList MUST NOT be EMPTY. For each level in levelList, it MUST correspond to the nodes in nextLevel. In other word, number of items in doorList must equal to number of items in nextLevel.
+	2. Number of item in nextLevel within Levellist MUST equal to number of item from the input JSON.
+	3. All description MUST be describing the APPEARANCE of the Character/Item.
+	4. DO NOT generate an output for level with index -1.
 
 
 Example:
@@ -174,7 +175,7 @@ Output:
 					"a": 0
 				}, 
 				
-"NPCList": [
+			"NPCList": [
 					{
 						"NPCName": "Village Elder",
 						"description": "A female elder wearing white suits",
@@ -187,7 +188,20 @@ Output:
 						"health": 10,
 						"friend": True, 
 						"door": 2
-					} 
+					}, 
+					{
+						"NPCName": "Village Assistant", 
+						"description": "A young male wearing normal suits and glasses"
+						"dialogue": [
+							"Hi Red", 
+							"The elder is expecting you"
+						], 
+						"attack": 0
+						"hasRangedAttack": False, 
+						"health": 10, 
+						"friend": True, 
+						"door": 0
+					}
 				], 
 				"itemList": [
 					{
