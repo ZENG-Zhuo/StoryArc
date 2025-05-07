@@ -20,7 +20,7 @@ from world_generator.model.entity import GameStructure
 
 load_dotenv()
 
-CURRENT_PROMPT_VERSION = '20250504_1744'
+CURRENT_PROMPT_VERSION = '20250505_1206'
 MAX_ATTEMPT = 2 # retry calling LLM if it fails
 
 class Formatter:
@@ -127,6 +127,7 @@ class GPTClient:
             # clean the response
             res_content = self.clean_json(res_content)
             if self.verify_response_structure(StoryStructure, res_content):
+                print(res_content)
                 return res_content
             print("Something went wrong. Retrying...")
         print("Reaching max attempts.")

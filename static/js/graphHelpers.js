@@ -52,3 +52,32 @@ function promptLabel(target, field, onUpdate) {
     onUpdate();
   });
 }
+
+function exportGraphToJson(nodes, edges) {
+  const levelMap = new Map();
+
+  // Create level objects with default arc as "Rise" if missing
+  nodes.forEach((node) => {
+    levelMap.set(node.id, {
+      storyArc: node.arc || "Rise",
+      levelIndex: node.id,
+      storyline: node.label,
+      nextLevel: [],
+    });
+  });
+
+  // Add the nextLevel connections from edges
+  edges.forEach((edge) => {
+    const source = levelMap.get(edge.source);
+    if (source) {
+      source.nextLevel.push({
+        criteriaDescription: edge.label,
+        index: edge.target,
+      });
+    }
+  });
+
+  return {
+    levelList: Array.from(levelMap.values()),
+  };
+}

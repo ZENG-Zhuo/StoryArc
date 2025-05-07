@@ -1,21 +1,62 @@
 async function extractStoryGraph(storyDescription, storyArc, numEndings) {
-  const storyData = await preprocessStory(storyDescription, storyArc, numEndings);
-  const graph = { nodes: [], edges: [] };
+  const MAX_RETRY_COUNT = 3;
+  let attempt = 0;
 
-  storyData.forEach((arc) => {
-    arc.nodes.forEach((node) => {
-      graph.nodes.push({ id: node.nodeID, label: node.storyline });
-      node.nextNode.forEach((link) => {
-        graph.edges.push({
-          source: node.nodeID,
-          target: link.nodeID,
-          label: link.criteriaDescription || "no criteria",
-        });
+  while (attempt < MAX_RETRY_COUNT) {
+    const storyData = await preprocessStory(
+      storyDescription,
+      storyArc,
+      numEndings
+    );
+
+    const graph = { nodes: [], edges: [] };
+    const nodeIdSet = new Set();
+
+    // Build nodes
+    storyData.levelList.forEach((level) => {
+      graph.nodes.push({
+        id: level.levelIndex,
+        label: level.storyline,
+        arc: level.storyArc,
       });
+      nodeIdSet.add(level.levelIndex);
     });
-  });
 
-  return graph;
+    // Build edges
+    let hasInvalidEdge = false;
+    storyData.levelList.forEach((level) => {
+      if (level.nextLevel && Array.isArray(level.nextLevel)) {
+        level.nextLevel.forEach((next) => {
+          if (next.index != -1) {
+            if (!nodeIdSet.has(next.index)) {
+              console.warn(
+                `Invalid edge: target node ${next.index} not found.`
+              );
+              hasInvalidEdge = true;
+            }
+            graph.edges.push({
+              source: level.levelIndex,
+              target: next.index,
+              label: next.criteriaDescription || "no criteria",
+            });
+          }
+        });
+      }
+    });
+
+    if (!hasInvalidEdge) {
+      return graph;
+    }
+
+    attempt++;
+    console.warn(
+      `Graph validation failed. Retrying (${attempt}/${MAX_RETRY_COUNT})...`
+    );
+  }
+
+  throw new Error(
+    "Failed to generate a valid story graph after multiple attempts."
+  );
 }
 
 async function preprocessStory(storyDescription, storyArc, numEndings) {

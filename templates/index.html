@@ -18,6 +18,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
+    <script src="{{ url_for('static', filename='js/unity.js') }}"></script>
     <script src="{{ url_for('static', filename='js/storyParser.js') }}"></script>
     <script src="{{ url_for('static', filename='js/graphHelpers.js') }}"></script>
     <script src="{{ url_for('static', filename='js/graph.js') }}"></script>
@@ -89,6 +90,47 @@
         </div>
       </div>
     </div>
+    <div
+      class="modal fade"
+      id="errorModal"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="errorModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" role="document">
+        <div
+          class="modal-content"
+          style="background-color: #222831; color: #eeeeee"
+        >
+          <div class="modal-header">
+            <h5 class="modal-title" id="errorModalLabel">
+              Graph Validation Error
+            </h5>
+            <button
+              type="button"
+              class="close text-light"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body" id="errorModalMessage">
+            <!-- Validation error message will go here -->
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-outline-light"
+              data-dismiss="modal"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <nav class="navbar navbar-expand-lg navbar-light bg-dark">
       <a class="navbar-brand text-light" href="#">Story Arc</a>
@@ -155,14 +197,6 @@
 
       <div id="stage1b" class="mt-4" style="display: none">
         <div
-          id="loadingSpinner"
-          style="display: none; text-align: center; margin: 20px"
-        >
-          <div class="spinner-border text-primary" role="status">
-            <span class="sr-only">Loading...</span>
-          </div>
-        </div>
-        <div
           id="contextMenu"
           style="
             position: absolute;
@@ -177,6 +211,14 @@
         ></div>
         <h2>Step 1b: Visualize Story Nodes</h2>
         <div
+          id="loadingSpinner"
+          style="display: none; text-align: center; margin: 20px"
+        >
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
+        <div
           id="graphContainer"
           style="
             width: 100%;
@@ -185,13 +227,24 @@
             background: #f9f9f9;
           "
         ></div>
-        <button class="btn btn-primary btn-block mt-3" id="proceedToCharacters">
-          Proceed to Character Selection
+        <button
+          class="btn btn-primary btn-block mt-3"
+          id="proceedToSpriteSelection"
+        >
+          Proceed to Sprites Selection
         </button>
       </div>
 
       <div id="stage2" class="mt-4" style="display: none">
-        <h2>Step 2: Generated Characters</h2>
+        <h2>Step 2: Generate Sprites</h2>
+        <div
+          id="loadingSpinner2"
+          style="display: none; text-align: center; margin: 20px"
+        >
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+        </div>
         <div id="charactersList" class="row"></div>
         <button
           class="btn btn-success btn-block"
@@ -203,8 +256,85 @@
       </div>
 
       <div id="stage3" class="mt-4" style="display: none">
-        <h2>Step 3: Game Generation</h2>
-        <p>Your game is being generated...</p>
+        <h2 style="color: #00adb5; margin-bottom: 1rem">
+          Step 3: Play Your Game
+        </h2>
+
+        <div
+          id="unity-container"
+          class="unity-desktop"
+          style="
+            width: 100%;
+            max-width: 1020px;
+            margin: 0 auto;
+            background-color: #393e46;
+            border: 2px solid #00adb5;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 0 10px rgba(0, 173, 181, 0.4);
+          "
+        >
+          <canvas
+            id="unity-canvas"
+            width="960"
+            height="600"
+            style="width: 100%; background-color: #222831; border-radius: 5px"
+            tabindex="-1"
+          ></canvas>
+
+          <div id="unity-loading-bar" style="margin-top: 10px">
+            <div style="color: #eeeeee; font-size: 14px">Loading...</div>
+            <div
+              id="unity-progress-bar-empty"
+              style="
+                background-color: #393e46;
+                border: 1px solid #00adb5;
+                border-radius: 5px;
+                height: 10px;
+                margin-top: 5px;
+                width: 100%;
+              "
+            >
+              <div
+                id="unity-progress-bar-full"
+                style="
+                  background-color: #00adb5;
+                  height: 100%;
+                  width: 0%;
+                  border-radius: 5px;
+                  transition: width 0.3s ease;
+                "
+              ></div>
+            </div>
+          </div>
+
+          <div
+            id="unity-warning"
+            style="
+              margin-top: 1rem;
+              color: #ff4c4c;
+              font-weight: bold;
+              display: none;
+            "
+          ></div>
+
+          <div
+            id="unity-footer"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-top: 1rem;
+              font-size: 14px;
+              color: #eeeeee;
+            "
+          >
+            <div id="unity-logo-title-footer">Powered by Unity</div>
+            <button id="unity-fullscreen-button" class="btn btn-info">
+              Fullscreen
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </body>
