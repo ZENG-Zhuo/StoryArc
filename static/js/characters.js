@@ -1,6 +1,6 @@
 let currentOriginalJSON = null;
 
-async function extractEntities() {
+async function extractEntities(retry = 10) {
   const graphJson = exportGraphToJson(gNodes, gLinks); // assumes this function exists
 
   try {
@@ -29,8 +29,22 @@ async function extractEntities() {
 
     console.log("Received entity-enriched structure:", result);
 
+    // 🛑 Check if the first level's doorList is empty
+    if (
+      retry &&
+      Array.isArray(result.levelList) &&
+      result.levelList.length > 0 &&
+      result.levelList[0].entity &&
+      Array.isArray(result.levelList[0].entity.doorList) &&
+      result.levelList[0].entity.doorList.length === 0
+    ) {
+      console.warn("First level doorList is empty. Regenerating entities...");
+      return await extractEntities(retry - 1); // Retry up to 10 times 
+    }
+
     const entries = [];
     console.log("playerData", result.playerData);
+
     // ➕ Extract playerData
     if (result.playerData) {
       entries.push({
@@ -48,6 +62,7 @@ async function extractEntities() {
       result.levelList.forEach((level) => {
         const entity = level.entity;
         console.log("entity", entity);
+
         // NPCs
         if (entity && Array.isArray(entity.NPCList)) {
           entity.NPCList.forEach((npc) => {
