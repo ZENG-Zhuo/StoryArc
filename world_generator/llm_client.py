@@ -29,6 +29,7 @@ from utils.dataclass_transform import transform_LevelNode_to_LevelEntityNode
 load_dotenv()
 
 CURRENT_PROMPT_VERSION = '20250506_0045'
+
 MAX_ATTEMPT = 2 # retry calling LLM if it fails
 
 class Formatter:

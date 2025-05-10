@@ -4,3 +4,9 @@ __pycache__/
 # world generator
 temp.py
 *temp*
+
+# generated files
+
+static/imgs/
+static/json/
+static/Unity/

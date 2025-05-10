@@ -20,40 +20,108 @@ async function handleVisualizeStory() {
     console.log(graph);
     const { nodes, edges } = graph;
 
-    // Hide the spinner
+    // Hide the spinner and show the graph
     $("#loadingSpinner").hide();
     $("#graphContainer").show();
 
     visualizeGraph(nodes, edges);
   } catch (error) {
     console.error("Error visualizing story graph:", error);
+
     $("#loadingSpinner").hide();
-    alert("Failed to visualize story graph.");
+
+    // Show the error message in the modal
+    $("#errorModalMessage").text(
+      "Failed to visualize story graph: " + error.message
+    );
+    $("#errorModal").modal("show");
+
+    $("#stage1").show();
+    $("#stage1b").hide();
   }
 }
+let debugV = {};
+async function handleProceedToSpriteSelection() {
+  const validation = validateGraph();
 
-function handleProceedToCharacters() {
-  const storyPrompt = $("#storyPrompt").val();
-  const storyArc = $("#storyArc").val();
-  const endingCount = parseInt($("#endingCount").val(), 10);
+  if (
+    !validation.isAcyclic ||
+    !validation.isConnected ||
+    !validation.hasSingleStartNode
+  ) {
+    // Show error modal with the message
+    $("#errorModalMessage").text(validation.message);
+    $("#errorModal").modal("show");
+    return;
+  }
 
-  const characters = extractCharacters(storyPrompt);
-  displayCharacters(characters);
-
-  console.log("Selected Story Arc:", storyArc);
-  console.log("Number of Endings:", endingCount);
-
+  // Show stage 2 and spinner
   $("#stage1b").hide();
   $("#stage2").show();
+  const charactersList = $("#charactersList");
+  charactersList.empty();
+  $("#loadingSpinner2").show();
+
+  try {
+    const characters = await extractEntities();
+    displayCharacters(characters);
+  } catch (err) {
+    console.error("Failed to extract characters:", err);
+    alert("An error occurred while extracting characters.");
+  } finally {
+    // Always hide the spinner
+    $("#loadingSpinner2").hide();
+  }
 }
 
 function handleGenerateGame() {
   $("#stage2").hide();
-  $("#stage3").show();
-  setTimeout(() => {
-    alert("Game generation complete!");
-    $("#stage3").hide();
-    $("#stage1").show();
-    $("#storyPrompt").val("");
-  }, 2000);
+  $("#stage3").show(); // Show Unity container (already present in #stage3)
+
+  let updatedJson;
+  try {
+    updatedJson = injectSpritesIntoJson();
+  } catch (err) {
+    alert("Failed to generate game data: " + err.message);
+    return;
+  }
+
+  fetch("/save_generated_json", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(updatedJson),
+  })
+    .then((response) => response.json())
+    .then((result) => {
+      if (result.status === "success") {
+        console.log("Saved file URL:", result.fileUrl);
+
+        // ✅ Unity game loads only after save is successful
+        LoadUnityGame(); // Uses your existing loader logic
+      } else {
+        showError("Error saving game data: " + result.error);
+        resetToInitialState();
+      }
+    })
+    .catch((error) => {
+      console.error("Fetch error:", error);
+      alert("Error sending data to backend: " + error.message);
+      resetToInitialState();
+    });
+}
+
+function resetToInitialState() {
+  $("#stage3").hide();
+  $("#stage1").show();
+  $("#storyPrompt").val("");
+}
+
+function showSuccess(msg) {
+  alert(msg); // Customize if you have a styled toast/alert
+}
+
+function showError(msg) {
+  alert(msg);
 }
