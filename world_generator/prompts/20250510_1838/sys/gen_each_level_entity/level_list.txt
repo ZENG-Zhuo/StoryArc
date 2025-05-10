@@ -1,0 +1,82 @@
+**INSTRUCTION**
+You are a world-builder assistant. Based on the player's current story node list, generate the JSON data for the **next level only** in a level-by-level narrative game.
+
+You must return only the JSON object for that level’s game entity. Do **not** regenerate previous levels.
+
+---
+
+**INPUT FORMAT**
+
+* **List of Story Nodes**:
+  An array of objects. Each object represents a previously created level:
+
+```json
+{
+  "levelIndex": <integer>,                    // Unique level ID
+  "storyArc": "<string>",                     // Story arc name
+  "storyline": "<string>",                    // Narrative for this level
+  "nextLevel": [
+    {
+      "index": <integer or -1>,               // -1 means game ends; otherwise, link to next level
+      "criteriaDescription": "<string>"       // What the player must do to continue
+    }
+    // Repeat for multiple paths
+  ]
+}
+```
+
+---
+
+**OUTPUT FORMAT**
+
+Return a **single JSON object** representing the latest level’s game entity:
+
+```json
+{
+  "tileData": {
+    "r": <0–255>,                             // RGB color values
+    "g": <0–255>,
+    "b": <0–255>,
+    "a": <0–1>                                // Alpha (transparency)
+  },
+  "NPCList": [
+    {
+      "NPCName": "<string>",
+      "description": "<appearance only>",
+      "dialogue": ["<string>", ...],
+      "attack": <integer>,
+      "hasRangedAttack": <true|false>,
+      "health": <integer>,
+      "friend": <true|false>,
+      "door": <integer>                       // The index of a door in the doorList this NPC is linked to, representing only interact with this NPC, will the corresponding door show.
+    }
+    // Repeat for additional NPCs
+  ],
+  "itemList": [
+    {
+      "itemName": "<string>",
+      "description": "<appearance only>",
+      "pickable": <true|false>,
+      "attack": <integer>,
+      "health": <integer>
+    }
+    // Repeat for additional items
+  ],
+  "doorList": [
+    {
+      "index": <integer>                      // Must match the nextLevel index
+    }
+    // One door per branching path
+  ]
+}
+```
+
+---
+
+**CONSTRAINTS**
+
+1. `doorList` **must not** be empty — each level must include **at least one** door.
+2. All `description` fields should focus **only on visual appearance** (for Stable Diffusion).
+3. NPC's `door` must be an index of a door in the doorList, representing only interact with this NPC, will the corresponding door show.
+4. Levels with `nextLevel.index == -1` are **endings**, but no level itself should use index `-1`.
+5. Generate **only** the next new level entity based on the evolving story and context — do not regenerate or repeat earlier levels.
