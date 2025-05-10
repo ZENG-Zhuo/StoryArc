@@ -2,8 +2,11 @@
 
 import os
 import json
-from json import JSONDecodeError
 from pathlib import Path
+from dataclasses import asdict
+from typing import List
+
+from tqdm import tqdm
 # from openai import OpenAI
 # from openai.types import OpenAIError,\
 #  APIConnectionError, RateLimitError, AuthenticationError, BadRequestError
@@ -12,15 +15,20 @@ from langchain_openai import ChatOpenAI
 # from langchain_core.messages.chat import ChatMessage
 from langchain_core.prompts import ChatPromptTemplate
 from portkey_ai import createHeaders
-from pydantic import ValidationError, BaseModel
+from pydantic import BaseModel
 
 from world_generator.model.story_node import StoryStructure
-from world_generator.model.entity import GameStructure
-
+from world_generator.model.entity import \
+    GameStructure,\
+    PlayerDataModel,\
+    LevelEntityNode,\
+    EntityModel
+from utils.parser import parse_str_to_dataclass
+from utils.dataclass_transform import transform_LevelNode_to_LevelEntityNode
 
 load_dotenv()
 
-CURRENT_PROMPT_VERSION = '20250504_1744'
+CURRENT_PROMPT_VERSION = '20250506_0045'
 MAX_ATTEMPT = 2 # retry calling LLM if it fails
 
 class Formatter:
@@ -81,6 +89,10 @@ class GPTClient:
         self.story_chain = self._init_chain('gen_story')
         self.entity_chain = self._init_chain('gen_entity')
 
+        # gen each level entity
+        self.level_list_chain = self._init_chain('gen_each_level_entity/level_list')
+        self.player_data_chain = self._init_chain('gen_each_level_entity/player_data')
+
     def _load_prompt(self, prompt_name):
         '''Load prompt from file'''
         prompt_path = self.prompts_dir / f"{prompt_name}.txt"
@@ -107,7 +119,7 @@ class GPTClient:
         # print(chain)
         return chain
 
-    def gen_story_node(self, story_description, story_arc, num_endings):
+    def gen_story_node(self, story_description, story_arc, num_endings) -> StoryStructure:
         '''A method for generating a story node'''
         # TODO:
         # - verify the response is in JSON
@@ -126,14 +138,15 @@ class GPTClient:
 
             # clean the response
             res_content = self.clean_json(res_content)
-            if self.verify_response_structure(StoryStructure, res_content):
-                return res_content
+            res_dataclass = parse_str_to_dataclass(StoryStructure, res_content)
+            if res_dataclass:
+                return res_dataclass
             print("Something went wrong. Retrying...")
         print("Reaching max attempts.")
         return None # TODO: handle error
 
 
-    def gen_entity(self, story_node: dict):
+    def gen_entity(self, story_node: StoryStructure) -> GameStructure:
         '''A method for generating an entity
         The output will be node with entity
         '''
@@ -141,9 +154,11 @@ class GPTClient:
         # - verify the response is in JSON
         # - handle error
         # handle exception
+        story_node_dict = story_node.to_dict()
+        story_node_str = json.dumps(story_node_dict)
         for _ in range(MAX_ATTEMPT):
             response = self.entity_chain.invoke({
-                "story_node": story_node
+                "story_node": story_node_str
             })
             res_content = response.content
 
@@ -152,31 +167,107 @@ class GPTClient:
 
             # clean the response
             res_content = self.clean_json(res_content)
-            if self.verify_response_structure(GameStructure, res_content):
-                return res_content
+            res_dataclass = parse_str_to_dataclass(GameStructure, res_content)
+            if res_dataclass:
+                return res_dataclass
             print("Something went wrong. Retrying...")
         print("Reaching max attempts.")
         return None # TODO: handle error
 
-    def verify_response_structure(self, dataclass: BaseModel, data: str):
-        '''A method for verifying the response structure'''
-        try:
-            # print("Raw response:", data)  # Debug print
-            # print(f"the data type is {type(data)}")
-            json_data = json.loads(data)
-            # print(f"the json_data type is {type(json_data)}")
-            dataclass.from_dict(json_data)
-            print("✅ The response is valid!")
-        except ValidationError as e:
-            print("❌ Validation failed:")
-            print(e.json(indent=2))
-            print(f"the raw data is {data}")
-            return False
-        except JSONDecodeError as e:
-            print("❌ JSON decoding failed:")
-            print(e)
-            return False
-        return True
+    def gen_player_data(self, story_node: StoryStructure) -> PlayerDataModel | None:
+        '''A method for generating player data'''
+        # TODO:
+        # - verify the response is in JSON
+        # - handle error
+        # handle exception
+        story_node_dict = story_node.to_dict()
+        story_node_str = json.dumps(story_node_dict)
+        for _ in range(MAX_ATTEMPT):
+            response = self.player_data_chain.invoke({
+                "story_node": story_node_str
+            })
+            res_content = response.content
+            res_content = self.clean_json(res_content)
+            res_dataclass = parse_str_to_dataclass(PlayerDataModel, res_content)
+            if res_dataclass:
+                return res_dataclass
+            print("Something went wrong. Retrying...")
+        print("Reaching max attempts.")
+        return None
+
+    def gen_level_list(self, story_node: StoryStructure) -> List[LevelEntityNode] | None:
+        '''A method for generating level list'''
+        # TODO:
+        # - verify the response is in JSON
+        # - handle error
+        # handle exception
+        level_size = len(story_node.levelList)
+        level_list = []
+        # level_dict_list = []
+        for i in tqdm(range(level_size), desc="Generating entities for levels"):
+            new_level_list = story_node.levelList[i]
+            level_list.append(new_level_list)
+
+            for _ in range(MAX_ATTEMPT):
+                level_list_dict = [asdict(d) for d in level_list]
+                response = self.entity_chain.invoke({
+                    "level_list": json.dumps(level_list_dict)
+                })
+                res_content = response.content
+                # clean the response
+                res_content = self.clean_json(res_content)
+                new_level_entity = parse_str_to_dataclass(EntityModel, res_content)
+                if new_level_entity:
+                    break
+                print("Something went wrong. Retrying...")
+            if new_level_entity:
+                # level_list[i] now is a LevelNode. transform it to LevelEntityNode
+                level_list[i]=transform_LevelNode_to_LevelEntityNode(
+                    level_node=level_list[i],
+                    entity=new_level_entity
+                )
+            else:
+                print("Reaching max attempts.")
+                return None
+        # verify the response structure
+        # pause. Now we have a list of LevelEntityNode. Decide how to check it.
+        res_dataclass = parse_str_to_dataclass(GameStructure, entity_list)
+        if res_dataclass:
+            return res_dataclass
+
+    def gen_each_level_entity(self, story_node: StoryStructure) -> GameStructure:
+        '''A method for generating an entity
+        The output will be node with entity
+        '''
+        # TODO:
+        # - verify the response is in JSON
+        # - handle error
+        # handle exception
+        # story_node_dict = story_node.to_dict()
+        for _ in range(MAX_ATTEMPT):
+            level_size = len(story_node.levelList)
+            entity_list = {
+                "playerData": asdict(story_node.playerData),
+                "levelList": []
+            }
+            player_data_chain = self.player_data_chain.invoke({
+                "story_node": json.dumps(sti)
+            })
+            for i in tqdm(range(level_size), desc="Generating entities for levels"):
+                new_level_list = story_node.levelList[i]
+                entity_list["levelList"].append(new_level_list)
+
+                new_level_entity = self.entity_chain.invoke({
+                    "story_node": json.dumps(entity_list)
+                })
+                entity_list["levelList"][i]["entity"] = new_level_entity
+            # verify the response structure
+            res_dataclass = parse_str_to_dataclass(GameStructure, entity_list)
+            if res_dataclass:
+                return res_dataclass
+            print("Something went wrong. Retrying...")
+        print("Reaching max attempts.")
+        return None
 
     def clean_json(self, text: str) -> str:
         '''A method for cleaning the JSON string

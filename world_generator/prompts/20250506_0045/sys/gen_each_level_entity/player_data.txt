@@ -1,0 +1,40 @@
+**INSTRUCTION**
+Generate a JSON file for a game player controlled protagonist based on the player’s short-story description.
+
+---
+
+**INPUT**
+
+* **Short Story Description**:
+  A single string, e.g. `"###Short Story Description###"`
+
+* **List of Story Nodes**:
+  An array of objects, each with:
+
+  ```json
+  {
+    "levelIndex": <integer>,                   // Unique node ID
+    "storyArc": "<string>",                    // Name of this story arc
+    "storyline": "<string>",                   // Narrative text for this node
+    "nextLevel": [
+      {
+        "index": <integer or -1>,              // Next node ID, or -1 if END
+        "criteriaDescription": "<string>"      // What the player must do to reach it
+      }
+      // …repeat for each outgoing branch
+    ]
+  }
+  ```
+
+---
+
+**OUTPUT**
+Produce a JSON structure (in text) with:
+
+```json
+
+{
+    "health": 100,                             // Initial health
+    "attack": <integer>,                       // Initial attack
+    "description": "<Appearance text for Stable Diffusion>"
+}

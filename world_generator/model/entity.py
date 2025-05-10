@@ -14,6 +14,8 @@ The models use Pydantic for data validation and serialization.
 from typing import List, Optional
 from pydantic import BaseModel
 
+from world_generator.model.level import LevelNode
+
 class TileData(BaseModel):
     """A model representing tile color data.
     
@@ -100,17 +102,7 @@ class EntityModel(BaseModel):
     itemList: List[ItemModel]
     doorList: List[DoorModel]
 
-class nextLevel(BaseModel):
-    """A model representing a possible next level.
-    
-    Attributes:
-        criteriaDescription (str): Description of how to reach this level
-        index (int): Index of the next level
-    """
-    criteriaDescription: str
-    index: int
-
-class LevelModel(BaseModel):
+class LevelEntityNode(LevelNode):
     """A model representing a single level in the game.
     
     Attributes:
@@ -120,10 +112,6 @@ class LevelModel(BaseModel):
         nextLevel (List[nextLevel]): Possible next levels
         entity (EntityModel): Entities present in this level
     """
-    storyArc: str
-    levelIndex: int
-    storyline: str
-    nextLevel: List[nextLevel]
     entity: EntityModel
 
 class GameStructure(BaseModel):
@@ -134,7 +122,7 @@ class GameStructure(BaseModel):
         levelList (List[LevelModel]): List of all levels in the game
     """
     playerData: PlayerDataModel
-    levelList: List[LevelModel]
+    levelList: List[LevelEntityNode]
     @classmethod
     def from_dict(cls, data: dict):
         """Create a GameStructure instance from a dictionary."""

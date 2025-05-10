@@ -7,18 +7,7 @@ including nodes, arcs, and transitions between story elements.
 
 from typing import List
 from pydantic import BaseModel
-
-class nextLevel(BaseModel):
-    """Represents a connection to the next story node with a criteriaDescription."""
-    criteriaDescription: str
-    index: int
-
-class LevelNode(BaseModel):
-    """Represents a single level node in the story structure."""
-    storyArc: str
-    levelIndex: int
-    storyline: str
-    nextLevel: List[nextLevel]
+from world_generator.model.level import LevelNode
 
 class StoryStructure(BaseModel):
     """Represents the complete story structure containing multiple levels."""
