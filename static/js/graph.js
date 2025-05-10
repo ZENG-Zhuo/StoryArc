@@ -1,9 +1,14 @@
 let svg,
   zoomLayer,
   simulation,
+  gNodes,
+  gLinks,
+  pendingConnection = null,
   initialized = false;
 
 function visualizeGraph(nodes, links) {
+  gNodes = nodes;
+  gLinks = links;
   d3.select("#contextMenu").style("display", "none");
 
   const width = $("#graphContainer").width();
@@ -13,8 +18,9 @@ function visualizeGraph(nodes, links) {
     svg = d3
       .select("#graphContainer")
       .append("svg")
-      .attr("width", width)
+      .attr("width", "100%")
       .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`)
       .style("background-color", "#222831");
 
     zoomLayer = svg.append("g");
@@ -67,7 +73,16 @@ function visualizeGraph(nodes, links) {
           {
             label: "➕ Add Node",
             action: () => {
-              const newId = Date.now().toString();
+              const usedIds = new Set(
+                nodes.map((node) => parseInt(node.id, 10))
+              );
+
+              // Find the smallest unused positive integer
+              let newId = 1;
+              while (usedIds.has(newId)) {
+                newId++;
+              }
+
               nodes.push({ id: newId, label: "New Node", x, y });
               visualizeGraph(nodes, links);
             },
@@ -85,6 +100,34 @@ function visualizeGraph(nodes, links) {
 
   simulation.nodes(nodes);
   simulation.force("link").links(links);
+
+  const incoming = new Map(nodes.map((d) => [d.id, 0]));
+  const outgoing = new Map(nodes.map((d) => [d.id, 0]));
+
+  links.forEach((link) => {
+    incoming.set(link.target.id, (incoming.get(link.target.id) || 0) + 1);
+    outgoing.set(link.source.id, (outgoing.get(link.source.id) || 0) + 1);
+  });
+
+  // Determine node color dynamically
+  function getNodeColor(d) {
+    const hasIncoming = incoming.get(d.id) > 0;
+    const hasOutgoing = outgoing.get(d.id) > 0;
+    if (!hasIncoming && hasOutgoing) {
+      return "#FFD369"; // Start node (no incoming edges)
+    } else if (hasIncoming && !hasOutgoing) {
+      return "#FF5722"; // End node (no outgoing edges)
+    } else {
+      const arc = d.arc ? d.arc.toLowerCase() : "";
+
+      if (arc === "rise") {
+        return "#4CAF50"; // Green for rise
+      } else if (arc === "fall") {
+        return "#F44336"; // Red for fall
+      }
+      return "#00ADB5"; // Normal node
+    }
+  }
 
   // ----- Links -----
   const link = zoomLayer
@@ -182,10 +225,7 @@ function visualizeGraph(nodes, links) {
           if (nodeIndex !== -1) {
             nodes.splice(nodeIndex, 1);
             for (let i = links.length - 1; i >= 0; i--) {
-              if (
-                links[i].source.id === d.id ||
-                links[i].target.id === d.id
-              ) {
+              if (links[i].source.id === d.id || links[i].target.id === d.id) {
                 links.splice(i, 1);
               }
             }
@@ -201,11 +241,11 @@ function visualizeGraph(nodes, links) {
     .append("circle")
     .attr("class", "node")
     .attr("r", 15)
-    .attr("fill", "#00ADB5")
     .call(drag(simulation))
     .on("click", clickCallback)
     .on("contextmenu", contextmenuCallback)
-    .merge(node);
+    .merge(node)
+    .attr("fill", getNodeColor);
 
   node.exit().remove();
 
@@ -236,6 +276,7 @@ function visualizeGraph(nodes, links) {
     .merge(labels)
     .attr("x", (d) => d.x)
     .attr("y", (d) => d.y)
+    .attr("maxWidth", 80)
     .text((d) =>
       d.label.length > 15 ? d.label.slice(0, 15) + "..." : d.label
     );
@@ -268,4 +309,83 @@ function visualizeGraph(nodes, links) {
   });
 
   simulation.alpha(1).restart();
+}
+
+let debugVal = {};
+function validateGraph() {
+  const adjList = new Map();
+  const inDegree = new Map();
+  const allNodeIds = new Set();
+
+  // Initialize adjacency list and in-degree map
+  gNodes.forEach((node) => {
+    adjList.set(node.id, []);
+    inDegree.set(node.id, 0);
+    allNodeIds.add(node.id);
+  });
+
+  // Build graph edges and in-degree count
+  gLinks.forEach((link) => {
+    if (adjList.has(link.source.id)) {
+      adjList.get(link.source.id).push(link.target.id);
+      inDegree.set(link.target.id, inDegree.get(link.target.id) + 1);
+    }
+  });
+  debugVal.adjList = adjList;
+  debugVal.inDegree = inDegree;
+  debugVal.allNodeIds = allNodeIds;
+
+  // Identify start nodes (in-degree 0)
+  const startNodes = [];
+  inDegree.forEach((degree, node) => {
+    if (degree === 0) startNodes.push(node);
+  });
+  debugVal.startNodes = startNodes;
+
+  const hasSingleStartNode = startNodes.length === 1;
+
+  // ---------- Acyclic check using Kahn’s Algorithm ----------
+  const queue = [...startNodes];
+  const topOrder = [];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    topOrder.push(current);
+
+    for (const neighbor of adjList.get(current)) {
+      inDegree.set(neighbor, inDegree.get(neighbor) - 1);
+      if (inDegree.get(neighbor) === 0) queue.push(neighbor);
+    }
+  }
+
+  const isAcyclic = topOrder.length === gNodes.length;
+
+  // ---------- Connectivity check (DFS from the single start node) ----------
+  const visited = new Set();
+  const dfs = (node) => {
+    if (visited.has(node)) return;
+    visited.add(node);
+    for (const neighbor of adjList.get(node)) {
+      dfs(neighbor);
+    }
+  };
+
+  if (hasSingleStartNode) {
+    dfs(startNodes[0]);
+  }
+
+  const isConnected = visited.size === gNodes.length;
+
+  return {
+    isAcyclic,
+    isConnected,
+    hasSingleStartNode,
+    message: !hasSingleStartNode
+      ? "Graph must have exactly one start node (in-degree 0)"
+      : !isAcyclic
+      ? "Graph has cycles"
+      : !isConnected
+      ? "Graph is not fully connected from the start node"
+      : "Graph is a valid connected acyclic graph with one entry point (valid DAG)",
+  };
 }

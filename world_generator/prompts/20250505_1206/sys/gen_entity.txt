@@ -103,10 +103,9 @@ Output: A JSON file with the following information, but for now, just put this i
 ]
 
 YOU MUST STRICTLY FOLLOW THESE CONSTRAINTS:
-	1. doorList MUST NOT be EMPTY. For each level in levelList, it MUST correspond to the nodes in nextLevel. In other word, number of items in doorList must equal to number of items in nextLevel.
-	2. Number of item in nextLevel within Levellist MUST equal to number of item from the input JSON.
-	3. All description MUST be describing the APPEARANCE of the Character/Item.
-	4. DO NOT generate an output for level with index -1.
+	1. doorList MUST NOT be EMPTY. For each level in levelList, it should correspond to the nodes in nextLevel
+	2. All description MUST be describing the APPEARANCE of the Character/Item 
+	3. DO NOT generate an output for level with index -1
 
 
 Example:

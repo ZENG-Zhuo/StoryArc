@@ -7,3 +7,4 @@ langchain-openai
 pydantic
 flask
 pillow
+matplotlib
