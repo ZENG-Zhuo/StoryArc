@@ -1,0 +1,171 @@
+**INSTRUCTION**
+Generate a JSON file for a game setting with unique, engaging storylines based on the player’s short-story description.
+let's generate level by level. Please only generate the latest level's entity
+---
+
+**INPUT**
+
+* **Short Story Description**:
+  A single string, e.g. `"###Short Story Description###"`
+
+* **List of Story Nodes**:
+  An array of objects, each with:
+
+  ```json
+  {
+    "levelIndex": <integer>,                   // Unique node ID
+    "storyArc": "<string>",                    // Name of this story arc
+    "storyline": "<string>",                   // Narrative text for this node
+    "nextLevel": [
+      {
+        "index": <integer or -1>,              // Next node ID, or -1 if END
+        "criteriaDescription": "<string>"      // What the player must do to reach it
+      }
+      // …repeat for each outgoing branch
+    ]
+  }
+  ```
+
+---
+
+**OUTPUT**
+Produce a JSON structure (in text) with:
+
+```json
+{
+        "tileData": {
+          "r": <0–255>,                         // Tile background color RGB
+          "g": <0–255>,
+          "b": <0–255>,
+          "a": <0–1>                            // Transparency
+        },
+        "NPCList": [
+          {
+            "NPCName": "<string>",
+            "description": "<Appearance text for Stable Diffusion>",
+            "dialogue": ["<string>", …],       // Sample lines
+            "attack": <integer>,
+            "hasRangedAttack": <true|false>,
+            "health": <integer>,
+            "friend": <true|false>,
+            "door": <integer>                   // Linked nextLevel index, represent only interact with this NPC, will the corresponding door show. 0 if this character doesn't associate with any door
+          }
+          // …repeat per NPC
+        ],
+        "itemList": [
+          {
+            "itemName": "<string>",
+            "description": "<Appearance text for Stable Diffusion>",
+            "pickable": <true|false>,
+            "attack": <integer>,
+            "health": <integer>
+          }
+          // …repeat per item
+        ],
+        "doorList": [
+          {
+            "index": <integer>,                 // Must match each nextLevel index
+          }
+          // …one per branch
+        ]
+      }
+
+```
+
+---
+
+**CONSTRAINTS**
+
+1. **doorList** cannot be empty—each level must have at least one door.
+2. All **description** fields must describe appearance only.
+3. -1 means returning to menu. So the ending level's next should be -1. And you shouldn't have any level with ID -1
+
+Now let's generate level by level. Please only generate the latest level's entity
+
+
+
+
+
+
+
+**INSTRUCTION**
+You are a world-builder assistant. Based on the player's current story node list, generate the JSON data for the **next level only** in a level-by-level narrative game.
+
+You must return only the JSON object for that level’s game entity. Do **not** regenerate previous levels.
+
+---
+
+**INPUT FORMAT**
+
+* **List of Story Nodes**:
+  An array of objects. Each object represents a previously created level:
+
+```json
+{
+  "levelIndex": <integer>,                    // Unique level ID
+  "storyArc": "<string>",                     // Story arc name
+  "storyline": "<string>",                    // Narrative for this level
+  "nextLevel": [
+    {
+      "index": <integer or -1>,               // -1 means game ends; otherwise, link to next level
+      "criteriaDescription": "<string>"       // What the player must do to continue
+    }
+    // Repeat for multiple paths
+  ]
+}
+```
+
+---
+
+**OUTPUT FORMAT**
+
+Return a **single JSON object** representing the latest level’s game entity:
+
+```json
+{
+  "tileData": {
+    "r": <0–255>,                             // RGB color values
+    "g": <0–255>,
+    "b": <0–255>,
+    "a": <0–1>                                // Alpha (transparency)
+  },
+  "NPCList": [
+    {
+      "NPCName": "<string>",
+      "description": "<appearance only>",
+      "dialogue": ["<string>", ...],
+      "attack": <integer>,
+      "hasRangedAttack": <true|false>,
+      "health": <integer>,
+      "friend": <true|false>,
+      "door": <integer>                       // The index of a door this NPC is linked to, representing only interact with this NPC, will the corresponding door show (0 if none)
+    }
+    // Repeat for additional NPCs
+  ],
+  "itemList": [
+    {
+      "itemName": "<string>",
+      "description": "<appearance only>",
+      "pickable": <true|false>,
+      "attack": <integer>,
+      "health": <integer>
+    }
+    // Repeat for additional items
+  ],
+  "doorList": [
+    {
+      "index": <integer>                      // Must match the nextLevel index
+    }
+    // One door per branching path
+  ]
+}
+```
+
+---
+
+**CONSTRAINTS**
+
+1. `doorList` **must not** be empty — each level must include **at least one** door.
+2. All `description` fields should focus **only on visual appearance** (for Stable Diffusion).
+3. Levels with `nextLevel.index == -1` are **endings**, but no level itself should use index `-1`.
+4. Generate **only** the next new level entity based on the evolving story and context — do not regenerate or repeat earlier levels.
