@@ -1,0 +1,106 @@
+**INSTRUCTION**
+Generate a JSON file for a game setting with unique, engaging storylines based on the player’s short-story description.
+
+---
+
+**INPUT**
+
+* **Short Story Description**:
+  A single string, e.g. `"###Short Story Description###"`
+
+* **List of Story Nodes**:
+  An array of objects, each with:
+
+  ```json
+  {
+    "levelIndex": <integer>,                   // Unique node ID
+    "storyArc": "<string>",                    // Name of this story arc
+    "storyline": "<string>",                   // Narrative text for this node
+    "nextLevel": [
+      {
+        "index": <integer or -1>,              // Next node ID, or -1 if END
+        "criteriaDescription": "<string>"      // What the player must do to reach it
+      }
+      // …repeat for each outgoing branch
+    ]
+  }
+  ```
+
+---
+
+**OUTPUT**
+Produce a JSON structure (in text) with:
+
+```json
+{
+  "playerData": {
+    "name": "<Main character’s name>",
+    "health": 100,                             // Initial health
+    "attack": <integer>,                       // Initial attack
+    "description": "<Appearance text for Stable Diffusion>",
+    "spriteAddress": "Sprites/<character name>"
+  },
+  "levelList": [
+    {
+      "levelIndex": <integer>,
+      "storyArc": "<string>",
+      "storyline": "<string>",
+      "nextLevel": [
+        {
+          "index": <integer>,
+          "criteriaDescription": "<string>"
+        }
+        // …repeat
+      ],
+      "entity": {
+        "tileData": {
+          "r": <0–255>,                         // Tile background color RGB
+          "g": <0–255>,
+          "b": <0–255>,
+          "a": <0–1>                            // Transparency
+        },
+        "NPCList": [
+          {
+            "NPCName": "<string>",
+            "description": "<Appearance text for Stable Diffusion>",
+            "dialogue": ["<string>", …],       // Sample lines
+            "attack": <integer>,
+            "hasRangedAttack": <true|false>,
+            "health": <integer>,
+            "friend": <true|false>,
+            "door": <integer>                   // Linked nextLevel index or -1
+          }
+          // …repeat per NPC
+        ],
+        "itemList": [
+          {
+            "itemName": "<string>",
+            "description": "<Appearance text for Stable Diffusion>",
+            "pickable": <true|false>,
+            "attack": <integer>,
+            "health": <integer>
+          }
+          // …repeat per item
+        ],
+        "doorList": [
+          {
+            "index": <integer>,                 // Must match each nextLevel index
+          }
+          // …one per branch
+        ]
+      }
+    }
+    // …repeat for all nodes (omit nodes with index –1)
+  ]
+}
+```
+
+---
+
+**CONSTRAINTS**
+
+1. **doorList** cannot be empty—each level must have at least one door.
+2. All **description** fields must describe appearance only.
+3. -1 means returning to menu. So the ending level's next should be -1. And you shouldn't have any level with ID -1
+
+Now let's generate level by level. Please only generate the latest level's entity
