@@ -1,0 +1,3 @@
+Short Story Description: "{story_description}"
+Story Arc Type: "{story_arc}"
+Minimum number of ending: {num_endings}
