@@ -62,6 +62,7 @@ class PlayerDataModel(BaseModel):
         attack (int): Base attack power of the player
         description (str): Physical description of the player
     """
+    name: str
     health: int
     attack: int
     description: str
