@@ -10,3 +10,6 @@ temp.py
 static/imgs/
 static/json/
 static/Unity/
+
+# macos
+**.DS_Store**
