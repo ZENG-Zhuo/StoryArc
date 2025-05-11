@@ -27,6 +27,7 @@ Return a JSON dictionary containing the player's attributes:
 
 ```json
 {
+  "name": <str>                              // Player character's name
   "health": 100,                             // Initial health
   "attack": <integer>,                       // Initial attack strength
   "description": "<Appearance description for Stable Diffusion>"
