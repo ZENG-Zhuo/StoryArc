@@ -46,7 +46,7 @@ def generate_entities():
 
     try:
         # gen_entity now returns a GameStructure instance
-        game_structure: GameStructure = story_generator.gen_entity(story_node)
+        game_structure: GameStructure = story_generator.gen_entity_stepwise(story_node)
 
         # Convert to dictionary for JSON response
         result = game_structure.to_dict()
