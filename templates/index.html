@@ -25,6 +25,7 @@
     <script src="{{ url_for('static', filename='js/characters.js') }}"></script>
     <script src="{{ url_for('static', filename='js/handlers.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dropdowns.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/gameSave.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <title>Story Arc - Game Generator</title>
@@ -193,6 +194,10 @@
         <button class="btn btn-primary btn-block mt-4" id="visualizeStory">
           Build this Story
         </button>
+
+        <button class="btn btn-warning btn-block mt-2" id="jumpToGame">
+          Jump to Game
+        </button>
       </div>
 
       <div id="stage1b" class="mt-4" style="display: none">
@@ -330,6 +335,82 @@
             "
           >
             <div id="unity-logo-title-footer">Powered by Unity</div>
+
+            <button onclick="LoadUnityGame()" class="btn btn-info">
+              Start Game
+            </button>
+            <!-- Save Game Button -->
+            <button onclick="openSaveModal()" class="btn btn-info">
+              Save Game
+            </button>
+
+            
+
+            <!-- Load Game Section -->
+            <div>
+              <select id="savedGamesSelect" style="width: 100px"></select>
+              <button onclick="loadSelectedGame()" class="btn btn-info">
+                Load Selected Game
+              </button>
+            </div>
+
+            <!-- Save Game Modal -->
+            <div
+              class="modal fade"
+              id="saveModal"
+              tabindex="-1"
+              role="dialog"
+              aria-labelledby="saveModalLabel"
+              aria-hidden="true"
+            >
+              <div class="modal-dialog" role="document">
+                <div
+                  class="modal-content"
+                  style="background-color: #222831; color: #eeeeee"
+                >
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="saveModalLabel">Save Game</h5>
+                    <button
+                      type="button"
+                      class="close text-light"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <input
+                      type="text"
+                      id="saveName"
+                      class="form-control"
+                      placeholder="Enter save name"
+                      style="
+                        background-color: #393e46;
+                        color: #eeeeee;
+                        border: none;
+                      "
+                    />
+                  </div>
+                  <div class="modal-footer">
+                    <button
+                      type="button"
+                      class="btn btn-outline-light"
+                      data-dismiss="modal"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-info"
+                      onclick="saveNamedGame()"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <button id="unity-fullscreen-button" class="btn btn-info">
               Fullscreen
             </button>

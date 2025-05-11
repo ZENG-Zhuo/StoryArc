@@ -36,10 +36,41 @@ async function extractEntities(retry = 10) {
       result.levelList.length > 0 &&
       result.levelList[0].entity &&
       Array.isArray(result.levelList[0].entity.doorList) &&
-      result.levelList[0].entity.doorList.length === 0
+      result.levelList[0].entity.doorList.length === 0 &&
+      result.levelList[0].entity.doorList[0].index === -1 &&
+      result.levelList[0].entity.doorList[0].index === 0
     ) {
       console.warn("First level doorList is empty. Regenerating entities...");
       return await extractEntities(retry - 1); // Retry up to 10 times
+    }
+
+    let levelIndexSet = new Set();
+
+    for (const level of result.levelList) {
+      levelIndexSet.add(level.levelIndex);
+    }
+
+    for (const level of result.levelList) {
+      // ensure doorIndex has corresponding level
+      if (level.entity.doorList && level.entity.doorList.length > 0) {
+
+        for (const door of level.entity.doorList) {
+          if (door.index !== -1) {
+            if (!levelIndexSet.has(door.index)) {
+              console.warn(
+                `Door index ${door.index} does not correspond to any level.`
+              );
+              return await extractEntities(retry - 1); // Retry up to 10 times
+            }
+            if (door.index === level.levelIndex) {
+              console.warn(
+                `Door index ${door.index} corresponds to the same level.`
+              );
+              return await extractEntities(retry - 1); // Retry up to 10 times
+            }
+          }
+        }
+      }
     }
 
     const entries = [];

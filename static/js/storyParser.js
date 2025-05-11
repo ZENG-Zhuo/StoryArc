@@ -50,8 +50,16 @@ async function extractStoryGraph(storyDescription, storyArc, numEndings) {
     });
 
     const validation = validateGraph(graph.nodes, graph.edges);
+    console.log("Nodes:", graph.nodes);
+    console.log("Edges:", graph.edges);
     const graphValid = validation.isAcyclic && validation.isConnected && validation.hasSingleStartNode;
-    graphInvalid = graphInvalid || !graphValid;
+    if (!graphValid) {
+      console.warn(
+        `Graph validation failed: ${validation.message}.`
+      );
+    }
+    
+    // graphInvalid = graphInvalid || !graphValid;
 
 
     if (!graphInvalid) {

@@ -371,7 +371,7 @@ function validateGraph(gNodes, gLinks) {
   };
 
   if (hasSingleStartNode) {
-    dfs(startNodes[0]);
+    dfs(startNodes[0]); 
   }
 
   const isConnected = visited.size === gNodes.length;

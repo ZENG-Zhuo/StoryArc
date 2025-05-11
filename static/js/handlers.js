@@ -125,3 +125,8 @@ function showSuccess(msg) {
 function showError(msg) {
   alert(msg);
 }
+
+function handleJumpToGame() {
+  $("#stage1, #stage1b, #stage2").hide();
+  $("#stage3").show();
+}
