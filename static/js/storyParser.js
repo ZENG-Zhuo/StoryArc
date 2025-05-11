@@ -1,5 +1,5 @@
 async function extractStoryGraph(storyDescription, storyArc, numEndings) {
-  const MAX_RETRY_COUNT = 3;
+  const MAX_RETRY_COUNT = 5;
   let attempt = 0;
 
   while (attempt < MAX_RETRY_COUNT) {
