@@ -39,7 +39,7 @@ async function extractEntities(retry = 10) {
       result.levelList[0].entity.doorList.length === 0
     ) {
       console.warn("First level doorList is empty. Regenerating entities...");
-      return await extractEntities(retry - 1); // Retry up to 10 times 
+      return await extractEntities(retry - 1); // Retry up to 10 times
     }
 
     const entries = [];
@@ -240,7 +240,13 @@ function injectSpritesIntoJson() {
     // ✅ Inject NPC and Item sprites
     for (const level of originalJson.levelList) {
       const entity = level.entity;
-      level.doorList = entity.doorList || []; // Ensure doorList exists
+      level.doorList =
+        entity.doorList && entity.doorList.length > 0
+          ? entity.doorList
+          : [{ index: -1 }];
+      for (const door of level.doorList) {
+        door.spriteAddress = "Sprites/Door";
+      }
       level.tileData = entity.tileData
         ? {
             r: (entity.tileData.r || 0) / 255,
