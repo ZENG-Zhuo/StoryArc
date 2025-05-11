@@ -1,0 +1,40 @@
+INSTRUCTION
+Generate a JSON dictionary describing a player-controlled protagonist, based on the player's short-story description.
+
+---
+
+INPUT
+
+```json
+{
+  "levelIndex": <integer>,                   // Unique node ID
+  "storyArc": "<string>",                    // Name of this story arc
+  "storyline": "<string>",                   // Narrative text for this node
+  "nextLevel": [
+    {
+      "index": <integer or -1>,              // Next node ID, or -1 if there is no story or game component afterward.
+      "criteriaDescription": "<string>"      // Requirement to proceed to this node
+    }
+    // ...repeat for each outgoing branch
+  ]
+}
+```
+
+---
+
+OUTPUT
+Return a JSON dictionary containing the player's attributes:
+
+```json
+{
+  "name": <str>                              // Player character's name
+  "health": 100,                             // Initial health
+  "attack": <integer>,                       // Initial attack strength
+  "description": "<Appearance description for Stable Diffusion>"
+}
+```
+
+---
+
+CONSTRAINT
+Only generate the JSON dictionary described above. Do not include any other text or repeat the input.

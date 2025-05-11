@@ -28,9 +28,9 @@ from utils.dataclass_transform import transform_LevelNode_to_LevelEntityNode
 
 load_dotenv()
 
-CURRENT_PROMPT_VERSION = '20250510_1838'
+CURRENT_PROMPT_VERSION = '20250511_1257'
 
-MAX_ATTEMPT = 2 # retry calling LLM if it fails
+MAX_ATTEMPT = 4 # retry calling LLM if it fails
 
 class Formatter:
     '''A class for formatting the input to the LLM'''
@@ -209,6 +209,7 @@ class GPTClient:
             new_level_list = story_node.levelList[i]
             level_list.append(new_level_list)
 
+            legit = False
             for _ in range(MAX_ATTEMPT):
                 level_list_dict = [level.dict() for level in level_list]
                 response = self.level_list_chain.invoke({
@@ -218,16 +219,28 @@ class GPTClient:
                 # clean the response
                 res_content = self.clean_json(res_content)
                 new_level_entity = parse_to_dataclass(EntityModel, res_content)
+                # verify the doorList and nextLevel correspondence
                 if new_level_entity:
-                    break
+                    door_indices = {door.index\
+                        for door in new_level_entity.doorList}
+                    next_level_indices = {next_level.index\
+                        for next_level in level_list[i].nextLevel}
+                    if not door_indices.issubset(next_level_indices):
+                        print(f"Door indices {door_indices}\
+                            are not within next level indices {next_level_indices}")
+                    else:
+                        legit = True
+                        break
                 print("Something went wrong. Retrying...")
-            if new_level_entity:
+            if legit:
                 # level_list[i] now is a LevelNode. transform it to LevelEntityNode
                 level_list[i]=transform_LevelNode_to_LevelEntityNode(
                     level_node=level_list[i],
                     entity=new_level_entity
                 )
             else:
+                print(f"level_list is {level_list}")
+                print(f"new_level_entity is {new_level_entity}")
                 print("Reaching max attempts.")
                 return None
         # verify the response structure

@@ -2,7 +2,7 @@ import json
 from json import JSONDecodeError
 from pydantic import BaseModel, ValidationError
 
-def parse_to_dataclass(dataclass: BaseModel, data: str | dict) -> BaseModel | None:
+def parse_to_dataclass(dataclass: BaseModel, data: str | dict, verbose = False) -> BaseModel | None:
     '''A method for verifying the response structure'''
     try:
         # print("Raw response:", data)  # Debug print
@@ -13,7 +13,8 @@ def parse_to_dataclass(dataclass: BaseModel, data: str | dict) -> BaseModel | No
             json_data = json.loads(data)
         # print(f"the json_data type is {type(json_data)}")
         res = dataclass.parse_obj(json_data)
-        print("✅ Parsing is valid!")
+        if verbose:
+            print("✅ Parsing is valid!")
         return res
     except ValidationError as e:
         print("❌ Parsing failed:")
