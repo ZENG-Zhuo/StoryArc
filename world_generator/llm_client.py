@@ -23,14 +23,15 @@ from world_generator.model.entity import \
     PlayerDataModel,\
     LevelEntityNode,\
     EntityModel
+from world_generator.model.level import LevelNode
 from utils.parser import parse_to_dataclass
 from utils.dataclass_transform import transform_LevelNode_to_LevelEntityNode
 
 load_dotenv()
 
-CURRENT_PROMPT_VERSION = '20250510_1838'
+CURRENT_PROMPT_VERSION = '20250511_1257'
 
-MAX_ATTEMPT = 2 # retry calling LLM if it fails
+MAX_ATTEMPT = 3 # retry calling LLM if it fails
 
 class Formatter:
     '''A class for formatting the input to the LLM'''
@@ -196,6 +197,22 @@ class GPTClient:
         print("Reaching max attempts.")
         return None
 
+    def verify_doorList_correspondence(
+        self,
+        new_level_entity: EntityModel,
+        current_level: LevelNode
+    ) -> bool:
+        '''A method for verifying the correspondence between doorList and nextLevel'''
+        door_indices = {door.index\
+            for door in new_level_entity.doorList}
+        next_level_indices = {next_level.index\
+            for next_level in current_level.nextLevel}
+        if not door_indices.issubset(next_level_indices):
+            print(f"Door indices {door_indices}\
+                are not within next level indices {next_level_indices}")
+            return False
+        return True
+
     def gen_level_list(self, story_node: StoryStructure) -> List[LevelEntityNode] | None:
         '''A method for generating level list'''
         # TODO:
@@ -209,6 +226,7 @@ class GPTClient:
             new_level_list = story_node.levelList[i]
             level_list.append(new_level_list)
 
+            legit = False
             for _ in range(MAX_ATTEMPT):
                 level_list_dict = [level.dict() for level in level_list]
                 response = self.level_list_chain.invoke({
@@ -218,16 +236,48 @@ class GPTClient:
                 # clean the response
                 res_content = self.clean_json(res_content)
                 new_level_entity = parse_to_dataclass(EntityModel, res_content)
+                # verify the doorList and nextLevel correspondence
                 if new_level_entity:
-                    break
+                    legit = self.verify_doorList_correspondence(
+                        new_level_entity=new_level_entity,
+                        current_level=level_list[i]
+                    )
+                    if legit:
+                        break
+                    # door_indices = {door.index\
+                    #     for door in new_level_entity.doorList}
+                    # next_level_indices = {next_level.index\
+                    #     for next_level in level_list[i].nextLevel}
+                    # if not door_indices.issubset(next_level_indices):
+                    #     print(f"Door indices {door_indices}\
+                    #         are not within next level indices {next_level_indices}")
+                    # else:
+                    #     legit = True
+                    #     break
                 print("Something went wrong. Retrying...")
-            if new_level_entity:
+            if new_level_entity and not legit:
+                # rule-based modify the doorList
+                print("GPT generated doorList verification failed.\
+                    Switch to Rule-based method to modify the doorList.")
+                for j in range(len(new_level_entity.doorList)):
+                    # find the corresponding nextLevel
+                    next_level_index = level_list[i].nextLevel[j].index
+                    new_level_entity.doorList[j].index = next_level_index
+                # verify again
+                # change legit
+                legit = self.verify_doorList_correspondence(
+                    new_level_entity=new_level_entity,
+                    current_level=level_list[i]
+                )
+            if new_level_entity and legit:
                 # level_list[i] now is a LevelNode. transform it to LevelEntityNode
                 level_list[i]=transform_LevelNode_to_LevelEntityNode(
                     level_node=level_list[i],
                     entity=new_level_entity
                 )
             else:
+                print(f"level_list is {level_list}")
+                print(f"new_level_entity is {new_level_entity}")
                 print("Reaching max attempts.")
                 return None
         # verify the response structure
