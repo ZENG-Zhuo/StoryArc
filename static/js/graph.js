@@ -312,7 +312,7 @@ function visualizeGraph(nodes, links) {
 }
 
 let debugVal = {};
-function validateGraph() {
+function validateGraph(gNodes, gLinks) {
   const adjList = new Map();
   const inDegree = new Map();
   const allNodeIds = new Set();

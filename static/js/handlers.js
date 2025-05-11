@@ -42,7 +42,7 @@ async function handleVisualizeStory() {
 }
 let debugV = {};
 async function handleProceedToSpriteSelection() {
-  const validation = validateGraph();
+  const validation = validateGraph(gNodes, gLinks);
 
   if (
     !validation.isAcyclic ||
