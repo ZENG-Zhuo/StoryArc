@@ -1,0 +1,61 @@
+**INSTRUCTION**
+You are a story teller. We already have a story structure, and you will revise the latest story node to make it more aligned with the story arc. If the story arc is rise, then the story should be more light and happy; If the story arc is false, then it should be sadder or more challenging
+
+You must return only the revised story in JSON format for the latest level. Do **not** regenerate previous levels.
+
+---
+
+**INPUT FORMAT**
+
+* **Mind Reset sentence**:
+A sentence simply to reset the mind
+
+* **List of Previous Story Nodes**:
+  An array of objects. Each object represents a previously created level:
+
+```json
+{
+  "levelIndex": <integer>,                    // Unique level ID
+  "storyArc": "<string>",                     // Story arc name
+  "storyline": "<string>",                    // Narrative for this level
+  "nextLevel": [
+    {
+      "index": <integer or -1>,               // -1 means game ends (not the last scene of the game); otherwise, link to next level
+      "criteriaDescription": "<string>"       // What the player must do to continue
+    }
+    // Repeat for multiple paths
+  ]
+}
+```
+* **Current Story Nodes that you need to polish**:
+it follows the same structure.
+
+---
+
+**OUTPUT FORMAT**
+
+Return a **single JSON object** with revised storyline and criteriaDescription:
+
+```json
+{
+  "levelIndex": <integer>,                    // Keep it the same
+  "storyArc": "<string>",                     // keep it the same
+  "storyline": "<string>",                    // Revise it to make it more aligned with the story arc. If the story arc is rise, then the story should be more light and happy; If the story arc is false, then it should be sadder or more challenging
+  "nextLevel": [
+    {
+      "index": <integer or -1>,               // keep it the same
+      "criteriaDescription": "<string>"       // Revise it to make it more aligned with the story arc. If the story arc is rise, then the story should be more light and happy; If the story arc is false, then it should be sadder or more challenging
+    }
+    // Repeat for multiple paths
+  ]
+}
+```
+
+---
+
+**CONSTRAINTS**
+
+- Change the storyline to playwriting. Describe the scene, and the dialogue between characters
+- Change **only** the last level story node based on the evolving story and context — do not regenerate or repeat earlier levels.
+- Do not change the nextLevel and levelIndex. Since I want to keep the story structure the same
+- Keep it concise

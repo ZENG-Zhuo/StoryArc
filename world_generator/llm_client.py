@@ -29,7 +29,7 @@ from utils.dataclass_transform import transform_LevelNode_to_LevelEntityNode
 
 load_dotenv()
 
-CURRENT_PROMPT_VERSION = '20250511_1257'
+CURRENT_PROMPT_VERSION = '20250524_1847'
 
 MAX_ATTEMPT = 3 # retry calling LLM if it fails
 
@@ -91,6 +91,9 @@ class GPTClient:
         self.story_chain = self._init_chain('gen_story')
         self.entity_chain = self._init_chain('gen_entity')
 
+        # revise each story
+        self.revise_story_chain = self._init_chain('revise_each_node')
+
         # gen each level entity
         self.level_list_chain = self._init_chain('gen_each_level_entity/level_list')
         self.player_data_chain = self._init_chain('gen_each_level_entity/player_data')
@@ -121,7 +124,55 @@ class GPTClient:
         # print(chain)
         return chain
 
+    def _process_gpt_request(
+        self,
+        chain,
+        input_data,
+        output_dataclass,
+        verification_func=None,
+        fallback_func=None
+    ):
+        """Generic method to process GPT requests with verification and fallback
+        
+        Args:
+            chain: The LangChain to invoke
+            input_data: Dictionary of input parameters for the chain
+            output_dataclass: The dataclass to parse the response into
+            verification_func: Optional function to verify the parsed response
+            fallback_func: Optional function to modify the response if verification fails
+            
+        Returns:
+            Parsed and verified dataclass instance or None if failed
+        """
+        for _ in range(MAX_ATTEMPT):
+            response = chain.invoke(input_data)
+            res_content = response.content
+            res_content = self.clean_json(res_content)
+
+            parsed_data = parse_to_dataclass(output_dataclass, res_content)
+
+            if parsed_data:
+                # If no verification needed or verification passes
+                if verification_func is None or verification_func(parsed_data):
+                    return parsed_data
+
+                # If verification fails but we have a fallback
+                elif fallback_func is not None:
+                    modified_data = fallback_func(parsed_data)
+                    if verification_func(modified_data):
+                        return modified_data
+
+            print("Something went wrong. Retrying...")
+
+        print("Reaching max attempts.")
+        return None
+
     def gen_story_node(self, story_description, story_arc, num_endings) -> StoryStructure:
+        story_struct = self.gen_story_struct(story_description, story_arc, num_endings)
+        story_list = self.revise_story_node(story_struct)
+        return story_list
+
+    def gen_story_struct(self, story_description, story_arc, num_endings) -> StoryStructure:
         '''A method for generating a story node'''
         # TODO:
         # - verify the response is in JSON
@@ -146,6 +197,58 @@ class GPTClient:
             print("Something went wrong. Retrying...")
         print("Reaching max attempts.")
         return None # TODO: handle error
+
+    def revise_story_node(self, story_node: StoryStructure) -> StoryStructure | None:
+        '''A method for revising a story node. Will make sure it aligns with the story arc'''
+        story_node_size = len(story_node.levelList)
+        story_list = []
+
+        for i in tqdm(range(story_node_size), desc="Revising each story nodes"):
+            current_story_node = story_node.levelList[i]
+            # story_list.append(current_story_node)
+
+            # fetch the mind reset sentence
+            if current_story_node.storyArc == 'Rise':
+                # rise.txt file
+                mind_reset_file = 'mind_reset/rise'
+            else:
+                # fall.txt file
+                mind_reset_file = 'mind_reset/fall'
+            mind_reset_sentence = self._load_prompt(mind_reset_file)
+
+            # Prepare input data
+            story_list_dict = [level.dict() for level in story_list]
+            current_story_node_dict = current_story_node.dict()
+            input_data = {
+                "mind_reset": mind_reset_sentence,
+                "story_list": json.dumps(story_list_dict),
+                "current_story_node": json.dumps(current_story_node_dict)
+            }
+
+            # Process the request
+            # print(f"level {i}\ninput_data:\n{input_data}")
+            new_story_node = self._process_gpt_request(
+                chain=self.revise_story_chain,
+                input_data=input_data,
+                output_dataclass=LevelNode
+            )
+
+            if new_story_node:
+                # Transform to LevelEntityNode
+                # print(f"new_story_node is:\n{new_story_node}")
+                # story_list[i] = new_story_node # replace with the new one
+                story_list.append(new_story_node)
+            else:
+                print(f"Failed to revise the node {i+1}")
+                return None
+        story_dict = {}
+        story_dict["levelList"] = story_list
+
+        res_dataclass = parse_to_dataclass(StoryStructure, story_dict)
+        if res_dataclass:
+            return res_dataclass
+        print("Failed to parse game dictionary to StoryStructure.")
+        return None
 
 
     def gen_entity(self, story_node: StoryStructure) -> GameStructure:
