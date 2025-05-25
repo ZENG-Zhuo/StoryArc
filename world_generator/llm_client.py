@@ -223,6 +223,7 @@ class GPTClient:
         level_list = []
         # level_dict_list = []
         for i in tqdm(range(level_size), desc="Generating entities for levels"):
+            
             new_level_list = story_node.levelList[i]
             level_list.append(new_level_list)
 
@@ -244,16 +245,6 @@ class GPTClient:
                     )
                     if legit:
                         break
-                    # door_indices = {door.index\
-                    #     for door in new_level_entity.doorList}
-                    # next_level_indices = {next_level.index\
-                    #     for next_level in level_list[i].nextLevel}
-                    # if not door_indices.issubset(next_level_indices):
-                    #     print(f"Door indices {door_indices}\
-                    #         are not within next level indices {next_level_indices}")
-                    # else:
-                    #     legit = True
-                    #     break
                 print("Something went wrong. Retrying...")
             if new_level_entity and not legit:
                 # rule-based modify the doorList

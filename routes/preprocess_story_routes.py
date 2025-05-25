@@ -37,7 +37,8 @@ def preprocess_story():
 @story_bp.route('/generate_entities', methods=['POST'])
 def generate_entities():
     data = request.json
-
+    print("Received data:", data)
+    
     try:
         # Parse the input into a StoryStructure instance
         story_node = StoryStructure(**data)

@@ -2,10 +2,13 @@ $(document).ready(function () {
   populateDropdown("storyArc", storyArcOptions);
   populateDropdown("endingCount", endingCountOptions);
   $("#visualizeStory").click(handleVisualizeStory);
+  $("#proceedToLevelDetail").click(handleShowDetail);
   $("#proceedToSpriteSelection").click(handleProceedToSpriteSelection);
   $("#generateGame").click(handleGenerateGame);
   $("#jumpToGame").click(handleJumpToGame);
+  $("#showPlayer").click(handleShowPlayer);
   initUnity();
+  InitializeNodeEditor();
 });
 
 document.addEventListener("DOMContentLoaded", function () {

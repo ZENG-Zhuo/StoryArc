@@ -17,8 +17,10 @@ function drag(simulation) {
     });
 }
 
-function showContextMenu(x, y, items) {
-  const menu = d3.select("#contextMenu");
+function showContextMenu(x, y, items, details = false) {
+  const menu = details
+    ? d3.select("#contextMenu1c")
+    : d3.select("#contextMenu");
   menu.html("");
 
   items.forEach((item) => {
@@ -68,12 +70,25 @@ function exportGraphToJson(nodes, edges) {
 
   // Add the nextLevel connections from edges
   edges.forEach((edge) => {
-    const source = levelMap.get(edge.source);
+    const source = levelMap.get(edge.source.id);
+
     if (source) {
       source.nextLevel.push({
         criteriaDescription: edge.label,
-        index: edge.target,
+        index: edge.target.id,
       });
+    }
+  });
+
+  levelMap.values().forEach((level) => {
+    // Remove the nextLevel property if it's empty
+    if (level.nextLevel.length === 0) {
+      level.nextLevel = [
+        {
+          criteriaDescription: "no criteria",
+          index: -1,
+        },
+      ];
     }
   });
 

@@ -1,7 +1,8 @@
+// Global variable to hold the fetched entity-enriched structure
 let currentOriginalJSON = null;
 
-async function extractEntities(retry = 10) {
-  const graphJson = exportGraphToJson(gNodes, gLinks); // assumes this function exists
+async function fetchEntityData(retry = 10) {
+  const graphJson = exportGraphToJson(gNodes, gLinks);
 
   try {
     const response = await fetch("/generate_entities", {
@@ -15,12 +16,9 @@ async function extractEntities(retry = 10) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Server returned an error:", errorData);
-
-      const message =
-        errorData.error || response.statusText || "Unknown error occurred.";
+      const message = errorData.error || response.statusText || "Unknown error occurred.";
       $("#errorModalMessage").text(message);
       $("#errorModal").modal("show");
-
       return null;
     }
 
@@ -29,107 +27,90 @@ async function extractEntities(retry = 10) {
 
     console.log("Received entity-enriched structure:", result);
 
-    // 🛑 Check if the first level's doorList is empty
+    // Check for bad doorList and retry if needed
     if (
       retry &&
       Array.isArray(result.levelList) &&
       result.levelList.length > 0 &&
       result.levelList[0].entity &&
       Array.isArray(result.levelList[0].entity.doorList) &&
-      result.levelList[0].entity.doorList.length === 0 &&
-      result.levelList[0].entity.doorList[0].index === -1 &&
-      result.levelList[0].entity.doorList[0].index === 0
+      result.levelList[0].entity.doorList.length > 0 &&
+      (result.levelList[0].entity.doorList[0].index === -1 ||
+        result.levelList[0].entity.doorList[0].index === 0)
     ) {
-      console.warn("First level doorList is empty. Regenerating entities...");
-      return await extractEntities(retry - 1); // Retry up to 10 times
+      console.warn("First level doorList is empty or invalid. Regenerating entities...");
+      return await fetchEntityData(retry - 1);
     }
 
-    let levelIndexSet = new Set();
-
+    // Validate door indices
+    const levelIndexSet = new Set(result.levelList.map(l => l.levelIndex));
     for (const level of result.levelList) {
-      levelIndexSet.add(level.levelIndex);
-    }
-
-    for (const level of result.levelList) {
-      // ensure doorIndex has corresponding level
       if (level.entity.doorList && level.entity.doorList.length > 0) {
-
         for (const door of level.entity.doorList) {
           if (door.index !== -1) {
-            if (!levelIndexSet.has(door.index)) {
-              console.warn(
-                `Door index ${door.index} does not correspond to any level.`
-              );
-              return await extractEntities(retry - 1); // Retry up to 10 times
-            }
-            if (door.index === level.levelIndex) {
-              console.warn(
-                `Door index ${door.index} corresponds to the same level.`
-              );
-              return await extractEntities(retry - 1); // Retry up to 10 times
+            if (!levelIndexSet.has(door.index) || door.index === level.levelIndex) {
+              console.warn(`Invalid door index ${door.index} on level ${level.levelIndex}. Setting to -1.`);
+              door.index = -1;
             }
           }
         }
       }
     }
 
-    const entries = [];
-    console.log("playerData", result.playerData);
-
-    // ➕ Extract playerData
-    if (result.playerData) {
-      entries.push({
-        name: result.playerData.name || "Player",
-        prompt: result.playerData.description || "No description.",
-        type: "Player",
-      });
-    }
-    console.log("Added Players", entries);
-
-    console.log("levelList", result.levelList);
-
-    // Extract level entities
-    if (Array.isArray(result.levelList)) {
-      result.levelList.forEach((level) => {
-        const entity = level.entity;
-        console.log("entity", entity);
-
-        // NPCs
-        if (entity && Array.isArray(entity.NPCList)) {
-          entity.NPCList.forEach((npc) => {
-            entries.push({
-              name: npc.NPCName,
-              prompt: npc.description,
-              type: "NPC",
-            });
-          });
-        }
-
-        // Items
-        if (entity && Array.isArray(entity.itemList)) {
-          entity.itemList.forEach((item) => {
-            entries.push({
-              name: item.itemName,
-              prompt: item.description,
-              type: "Item",
-            });
-          });
-        }
-      });
-    }
-
-    return entries;
+    return result;
   } catch (err) {
     console.error("Request failed:", err);
-
-    $("#errorModalMessage").text(
-      "Failed to connect to entity generation service."
-    );
+    $("#errorModalMessage").text("Failed to connect to entity generation service.");
     $("#errorModal").modal("show");
-
     return null;
   }
 }
+
+function extractEntitiesFromResult() {
+  const entries = [];
+  const result = currentOriginalJSON;
+  if (!result) return entries;
+
+  console.log("playerData", result.playerData);
+
+  if (result.playerData) {
+    entries.push({
+      name: result.playerData.name || "Player",
+      prompt: result.playerData.description || "No description.",
+      type: "Player",
+    });
+  }
+
+  if (Array.isArray(result.levelList)) {
+    result.levelList.forEach((level) => {
+      const entity = level.entity;
+      if (!entity) return;
+
+      if (Array.isArray(entity.NPCList)) {
+        entity.NPCList.forEach((npc) => {
+          entries.push({
+            name: npc.NPCName,
+            prompt: npc.description,
+            type: "NPC",
+          });
+        });
+      }
+
+      if (Array.isArray(entity.itemList)) {
+        entity.itemList.forEach((item) => {
+          entries.push({
+            name: item.itemName,
+            prompt: item.description,
+            type: "Item",
+          });
+        });
+      }
+    });
+  }
+
+  return entries;
+}
+
 
 const spriteMap = {};
 
