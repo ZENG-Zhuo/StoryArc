@@ -168,7 +168,9 @@ class GPTClient:
         return None
 
     def gen_story_node(self, story_description, story_arc, num_endings) -> StoryStructure:
-        pass
+        story_struct = self.gen_story_struct(story_description, story_arc, num_endings)
+        story_list = self.revise_story_node(story_struct)
+        return story_list
 
     def gen_story_struct(self, story_description, story_arc, num_endings) -> StoryStructure:
         '''A method for generating a story node'''
