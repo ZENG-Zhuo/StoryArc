@@ -53,6 +53,7 @@ class ItemModel(BaseModel):
     pickable: bool
     attack: int
     health: int
+    door: Optional[int]
 
 class PlayerDataModel(BaseModel):
     """A model representing the player's data.
@@ -105,7 +106,7 @@ class EntityModel(BaseModel):
 
 class LevelEntityNode(LevelNode):
     """A model representing a single level in the game.
-    
+    This is inherit! So we have other attributes
     Attributes:
         storyArc (str): Name of the story arc this level belongs to
         levelIndex (int): Unique identifier for the level

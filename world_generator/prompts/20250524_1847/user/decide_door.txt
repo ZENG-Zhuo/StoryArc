@@ -1,0 +1,7 @@
+The list of the potential next level is:
+{next_level}
+
+And the current entity is:
+{current_entity}
+
+Which index of the next level this entity will lead to? Just output the index:
