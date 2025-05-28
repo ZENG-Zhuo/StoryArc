@@ -8,3 +8,4 @@ pydantic
 flask
 pillow
 matplotlib
+networkx
