@@ -4,12 +4,10 @@ import os
 import json
 import inspect
 from pathlib import Path
-
+from functools import partial
 from typing import List
 
 from tqdm import tqdm
-
-from functools import partial
 
 # from openai import OpenAI
 # from openai.types import OpenAIError,\
@@ -33,6 +31,7 @@ from world_generator.model.entity import \
 from world_generator.model.level import LevelNode, NextLevel
 from utils.parser import parse_to_dataclass
 from utils.dataclass_transform import transform_LevelNode_to_LevelEntityNode
+from utils.graph import no_unreachable_nodes, remove_unreachable_nodes
 
 load_dotenv()
 
@@ -157,6 +156,9 @@ class GPTClient:
             response = chain.invoke(input_data)
             res_content = response.content
             res_content = self.clean_json(res_content)
+            # with open("temp_data_ff7_20250528_0044/story_node_together.json", "r", encoding="utf-8") as f:
+            #     res_content = json.load(f)
+                # story_node = StoryStructure.from_dict(data)
             # print(f"res_content is {res_content}")
             if output_dataclass:
                 res_content = parse_to_dataclass(output_dataclass, res_content)
@@ -197,29 +199,20 @@ class GPTClient:
 
     def gen_story_struct(self, story_description, story_arc, num_endings) -> StoryStructure:
         '''A method for generating a story node'''
-        # TODO:
-        # - verify the response is in JSON
-        # - handle error
-        # handle exception
-        for _ in range(MAX_ATTEMPT):
-            response = self.story_chain.invoke({
-                "story_description": story_description,
-                "story_arc": story_arc,
-                "num_endings": num_endings
-            })
-            res_content = response.content
 
-            # for testing
-            # res_content = self.dummy_gen_story_node(story_description, story_arc, num_endings)
+        input_data = {
+            "story_description": story_description,
+            "story_arc": story_arc,
+            "num_endings": num_endings
+        }
 
-            # clean the response
-            res_content = self.clean_json(res_content)
-            res_dataclass = parse_to_dataclass(StoryStructure, res_content)
-            if res_dataclass:
-                return res_dataclass
-            print("Something went wrong. Retrying...")
-        print("Reaching max attempts.")
-        return None # TODO: handle error
+        return self._process_gpt_request(
+            chain=self.story_chain,
+            input_data=input_data,
+            output_dataclass=StoryStructure,
+            verification_func=no_unreachable_nodes,
+            fallback_func=remove_unreachable_nodes
+        )
 
     def revise_story_node(self, story_node: StoryStructure) -> StoryStructure | None:
         '''A method for revising a story node. Will make sure it aligns with the story arc'''
@@ -557,7 +550,7 @@ class GPTClient:
         if not level_list:
             print("Failed to generate level list.")
             return None
-        
+
         self.decide_door(level_list=level_list)
         self.append_door_list(level_list=level_list)
 
