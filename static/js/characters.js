@@ -16,7 +16,8 @@ async function fetchEntityData(retry = 10) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Server returned an error:", errorData);
-      const message = errorData.error || response.statusText || "Unknown error occurred.";
+      const message =
+        errorData.error || response.statusText || "Unknown error occurred.";
       $("#errorModalMessage").text(message);
       $("#errorModal").modal("show");
       return null;
@@ -38,18 +39,25 @@ async function fetchEntityData(retry = 10) {
       (result.levelList[0].entity.doorList[0].index === -1 ||
         result.levelList[0].entity.doorList[0].index === 0)
     ) {
-      console.warn("First level doorList is empty or invalid. Regenerating entities...");
+      console.warn(
+        "First level doorList is empty or invalid. Regenerating entities..."
+      );
       return await fetchEntityData(retry - 1);
     }
 
     // Validate door indices
-    const levelIndexSet = new Set(result.levelList.map(l => l.levelIndex));
+    const levelIndexSet = new Set(result.levelList.map((l) => l.levelIndex));
     for (const level of result.levelList) {
       if (level.entity.doorList && level.entity.doorList.length > 0) {
         for (const door of level.entity.doorList) {
           if (door.index !== -1) {
-            if (!levelIndexSet.has(door.index) || door.index === level.levelIndex) {
-              console.warn(`Invalid door index ${door.index} on level ${level.levelIndex}. Setting to -1.`);
+            if (
+              !levelIndexSet.has(door.index) ||
+              door.index === level.levelIndex
+            ) {
+              console.warn(
+                `Invalid door index ${door.index} on level ${level.levelIndex}. Setting to -1.`
+              );
               door.index = -1;
             }
           }
@@ -60,7 +68,9 @@ async function fetchEntityData(retry = 10) {
     return result;
   } catch (err) {
     console.error("Request failed:", err);
-    $("#errorModalMessage").text("Failed to connect to entity generation service.");
+    $("#errorModalMessage").text(
+      "Failed to connect to entity generation service."
+    );
     $("#errorModal").modal("show");
     return null;
   }
@@ -111,7 +121,6 @@ function extractEntitiesFromResult() {
   return entries;
 }
 
-
 const spriteMap = {};
 
 function displayCharacters(characters) {
@@ -121,7 +130,7 @@ function displayCharacters(characters) {
   const seenCharacters = new Set();
 
   characters.forEach((character) => {
-    const key = `${character.type}:${character.name}:${character.prompt}`; // prompt = description
+    const key = `${character.type}:${character.name}:${character.description}`; 
 
     if (seenCharacters.has(key)) return;
     seenCharacters.add(key);
@@ -133,52 +142,81 @@ function displayCharacters(characters) {
     };
 
     const characterCard = $(`
-      <div class="col-md-4 mb-4">
-        <div class="card" style="background-color: #393E46; color: #EEEEEE;">
-          <div class="card-body">
-            <h5 class="card-title d-flex align-items-center justify-content-between">
-              ${character.name}
-              <span class="badge bg-secondary text-light">
-                <i class="${
-                  typeIcons[character.type] || "fa-solid fa-question"
-                } me-1"></i> 
-                ${character.type}
-              </span>
-            </h5>
-            <p>${character.prompt}</p>
-            <button class="btn btn-primary generateSprite" 
-              data-prompt="${character.prompt}" 
-              data-name="${character.name}" 
-              data-type="${character.type}" 
-              data-description="${character.prompt}">Generate Sprite</button>
-            <button class="btn btn-success regenerateSprite" style="display:none;">Regenerate Sprite</button>
-            <img src="" alt="${
-              character.name
-            } sprite" style="display:none; width: 150px; height: 150px;" class="sprite-image">
-            <i class="fa-solid fa-spinner loading-icon" style="display:none; font-size: 24px; color: #00ADB5;"></i>
-          </div>
+  <div class="col-md-4 mb-4">
+    <div class="card" style="background-color: #393E46; color: #EEEEEE;">
+      <div class="card-body">
+        <h5 class="card-title d-flex align-items-center justify-content-between">
+          ${character.name}
+          <span class="badge bg-secondary text-light">
+            <i class="${
+              typeIcons[character.type] || "fa-solid fa-question"
+            } me-1"></i> 
+            ${character.type}
+          </span>
+        </h5>
+
+        <div class="form-group">
+          <label class="form-label">Prompt</label>
+          <input 
+            type="text" 
+            class="form-control custom-input mb-3 character-prompt-input" 
+            value="${character.prompt}"
+            style="background-color: #222831; color: #EEEEEE; border: 1px solid #00ADB5;"
+          />
         </div>
+
+        <button class="btn btn-primary generateSprite sprite-button" 
+          data-name="${character.name}" 
+          data-type="${character.type}" 
+          data-prompt="${character.prompt}"
+          data-description="${character.description}"
+          >
+          Generate Sprite
+        </button>
+
+        <button class="btn btn-success regenerateSprite" style="display:none;">Regenerate Sprite</button>
+
+        <img src="" alt="${character.name} sprite" 
+          style="display:none; width: 150px; height: 150px;" 
+          class="sprite-image">
+
+        <i class="fa-solid fa-spinner loading-icon" 
+          style="display:none; font-size: 24px; color: #00ADB5;"></i>
       </div>
-    `);
+    </div>
+  </div>
+`);
+
+    // Bind the onChange event to update the button's data-prompt attribute
+    characterCard.find(".character-prompt-input").on("input", function () {
+      console.log("Input changed:", $(this).val());
+      const newPrompt = $(this).val();
+      const cardBody = $(this).closest(".card-body");
+      console.log("Card body:", cardBody);
+      console.log("Button:", cardBody.find(".sprite-button"));
+      console.log("Old prompt:", cardBody.find(".sprite-button").data("prompt"));
+      cardBody.find(".sprite-button").attr("data-prompt", newPrompt);
+    });
 
     charactersList.append(characterCard);
     debugV.charactersList = charactersList;
   });
 
   $(".generateSprite").click(function () {
-    const prompt = $(this).data("prompt");
-    const name = $(this).data("name");
-    const type = $(this).data("type");
-    const desc = $(this).data("description");
+    const prompt = $(this).dataset.prompt;
+    const name = $(this).dataset.name;
+    const type = $(this).dataset.type;
+    const desc = $(this).dataset.description;
     generateSprite(this, prompt, type, name, desc);
   });
 
   $(".regenerateSprite").click(function () {
     const button = $(this).siblings(".generateSprite");
-    const prompt = button.data("prompt");
-    const name = button.data("name");
-    const type = button.data("type");
-    const desc = button.data("description");
+    console.log(button);
+    const prompt = button.dataset.prompt;
+    const name = button.dataset.name;
+    const type = button.dataset.type;
+    const desc = button.dataset.description;
     generateSprite(this, prompt, type, name, desc);
   });
 
@@ -186,6 +224,7 @@ function displayCharacters(characters) {
 }
 
 function generateSprite(button, prompt, type, name, description) {
+  console.log("Generating sprite for:", prompt, type, name, description);
   const loadingIcon = $(button).siblings(".loading-icon");
   loadingIcon.show().addClass("fa-spin");
 
