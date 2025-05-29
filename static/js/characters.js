@@ -130,7 +130,7 @@ function displayCharacters(characters) {
   const seenCharacters = new Set();
 
   characters.forEach((character) => {
-    const key = `${character.type}:${character.name}:${character.description}`; 
+    const key = `${character.type}:${character.name}:${character.description}`;
 
     if (seenCharacters.has(key)) return;
     seenCharacters.add(key);
@@ -157,19 +157,19 @@ function displayCharacters(characters) {
 
         <div class="form-group">
           <label class="form-label">Prompt</label>
-          <input 
-            type="text" 
-            class="form-control custom-input mb-3 character-prompt-input" 
-            value="${character.prompt}"
-            style="background-color: #222831; color: #EEEEEE; border: 1px solid #00ADB5;"
-          />
+          <textarea
+            class="form-control custom-input mb-3 character-prompt-input"
+            style="background-color: #222831; color: #EEEEEE; border: 1px solid #00ADB5; overflow:hidden; resize:none;"
+            oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';"
+          >${character.prompt}
+          </textarea>
         </div>
 
         <button class="btn btn-primary generateSprite sprite-button" 
           data-name="${character.name}" 
           data-type="${character.type}" 
           data-prompt="${character.prompt}"
-          data-description="${character.description}"
+          data-description="${character.prompt}"
           >
           Generate Sprite
         </button>
@@ -189,12 +189,8 @@ function displayCharacters(characters) {
 
     // Bind the onChange event to update the button's data-prompt attribute
     characterCard.find(".character-prompt-input").on("input", function () {
-      console.log("Input changed:", $(this).val());
       const newPrompt = $(this).val();
       const cardBody = $(this).closest(".card-body");
-      console.log("Card body:", cardBody);
-      console.log("Button:", cardBody.find(".sprite-button"));
-      console.log("Old prompt:", cardBody.find(".sprite-button").data("prompt"));
       cardBody.find(".sprite-button").attr("data-prompt", newPrompt);
     });
 
@@ -203,20 +199,19 @@ function displayCharacters(characters) {
   });
 
   $(".generateSprite").click(function () {
-    const prompt = $(this).dataset.prompt;
-    const name = $(this).dataset.name;
-    const type = $(this).dataset.type;
-    const desc = $(this).dataset.description;
+    const prompt = $(this)[0].dataset.prompt;
+    const name = $(this)[0].dataset.name;
+    const type = $(this)[0].dataset.type;
+    const desc = $(this)[0].dataset.description;
     generateSprite(this, prompt, type, name, desc);
   });
 
   $(".regenerateSprite").click(function () {
     const button = $(this).siblings(".generateSprite");
-    console.log(button);
-    const prompt = button.dataset.prompt;
-    const name = button.dataset.name;
-    const type = button.dataset.type;
-    const desc = button.dataset.description;
+    const prompt = button[0].dataset.prompt;
+    const name = button[0].dataset.name;
+    const type = button[0].dataset.type;
+    const desc = button[0].dataset.description;
     generateSprite(this, prompt, type, name, desc);
   });
 
