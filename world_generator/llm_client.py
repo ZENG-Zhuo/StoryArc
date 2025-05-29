@@ -156,6 +156,9 @@ class GPTClient:
             response = chain.invoke(input_data)
             res_content = response.content
             res_content = self.clean_json(res_content)
+            # with open("temp_data_ff7_20250528_0044/story_node_together.json", "r", encoding="utf-8") as f:
+            #     res_content = json.load(f)
+                # story_node = StoryStructure.from_dict(data)
             # print(f"res_content is {res_content}")
             if output_dataclass:
                 res_content = parse_to_dataclass(output_dataclass, res_content)
