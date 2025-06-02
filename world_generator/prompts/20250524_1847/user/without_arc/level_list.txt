@@ -1,5 +1,3 @@
-{mind_reset}
-
 List of previous levels: {level_list}
 
 Player Character Name: {player_name}. Do NOT re-generate this Player character as NPC
