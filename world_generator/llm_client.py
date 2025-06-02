@@ -5,7 +5,7 @@ import json
 import inspect
 from pathlib import Path
 from functools import partial
-from typing import List
+from typing import List, Callable
 
 from tqdm import tqdm
 
@@ -169,27 +169,80 @@ class GPTClient:
                 if verification_func is None or verification_func(res_content):
                     # print("verification success")
                     return res_content
-
-                # If verification fails but we have a fallback
-                if fallback_func is not None:
-                    fallback_args = inspect.signature(fallback_func).parameters
-                    if len(fallback_args) == 1:
-                        modified_data = fallback_func(res_content)
-                    elif len(fallback_args) == 0:
-                        modified_data = fallback_func()
-                    else:
-                        print("fallback function requires more than 1 arguments.")
-                        print("return None")
-                        return None
-                    if verification_func(modified_data):
-                        return modified_data
-                    print("fallback function failed to modify the response.")
-                    print("return None")
-                    return None
             print("Something went wrong. Retrying...")
+
+        # If max attempts reached and fallback function provided
+        if fallback_func is not None:
+            fallback_args = inspect.signature(fallback_func).parameters
+            if len(fallback_args) == 1:
+                modified_data = fallback_func(res_content)
+            elif len(fallback_args) == 0:
+                modified_data = fallback_func()
+            else:
+                print("fallback function requires equal to or less than 1 arguments.")
+                print("return None")
+                return None
+            if verification_func(modified_data):
+                return modified_data
+            print("fallback function failed to modify the response.")
+            print("return None")
+            return None
 
         print("Reaching max attempts.")
         return None
+
+    def _iteratively_gen(
+        self, data_list,
+        get_input: Callable,
+        get_output: Callable,
+        post_process_func: Callable | None = None,
+        desc:str=None
+    ):
+        '''
+        A helper function to iteratively generate new output, and append the output to the input
+        and generate new output
+        '''
+        data_size = len(data_list)
+        res = []
+
+        for i in tqdm(range(data_size), desc=desc):
+            cur_data = data_list[i]
+
+            # input and output
+            input_data = get_input(res, cur_data)
+            output_data = get_output(input_data)
+
+            if post_process_func:
+                # Get the number of parameters the function accepts
+                params = inspect.signature(post_process_func).parameters
+                if len(params) == 1:
+                    output_data = post_process_func(output_data)
+                elif len(params) == 2:
+                    output_data = post_process_func(output_data, cur_data)
+                else:
+                    print("post_process_func requires equal to or less than 2 arguments.")
+                    print("return None")
+                    return None
+
+            if output_data:
+                res.append(output_data)
+            else:
+                print(f"Failed to generate the output_data {i+1}")
+                print(f'Current data from data list is {cur_data}')
+                return None
+        return res
+    
+    def _fetch_mind_reset(self, story_arc: str) -> str:
+        '''A helper function to get mind reset sentence'''
+        # fetch the mind reset sentence
+        if story_arc == 'Rise':
+            # rise.txt file
+            mind_reset_file = 'mind_reset/rise'
+        else:
+            # fall.txt file
+            mind_reset_file = 'mind_reset/fall'
+        mind_reset_sentence = self._load_prompt(mind_reset_file)
+        return mind_reset_sentence
 
     def gen_story_node(self, story_description, story_arc, num_endings) -> StoryStructure:
         '''A method for generating a story node'''
@@ -223,15 +276,16 @@ class GPTClient:
             current_story_node = story_node.levelList[i]
             # story_list.append(current_story_node)
 
-            # fetch the mind reset sentence
-            if current_story_node.storyArc == 'Rise':
-                # rise.txt file
-                mind_reset_file = 'mind_reset/rise'
-            else:
-                # fall.txt file
-                mind_reset_file = 'mind_reset/fall'
-            mind_reset_sentence = self._load_prompt(mind_reset_file)
-
+            # # fetch the mind reset sentence
+            # if current_story_node.storyArc == 'Rise':
+            #     # rise.txt file
+            #     mind_reset_file = 'mind_reset/rise'
+            # else:
+            #     # fall.txt file
+            #     mind_reset_file = 'mind_reset/fall'
+            
+            # mind_reset_sentence = self._load_prompt(mind_reset_file)
+            mind_reset_sentence = self._fetch_mind_reset(current_story_node.storyArc)
             # Prepare input data
             story_list_dict = [level.dict() for level in story_list]
             current_story_node_dict = current_story_node.dict()
@@ -266,6 +320,69 @@ class GPTClient:
         print("Failed to parse game dictionary to StoryStructure.")
         return None
 
+    def gen_story_node_without_arc(self, story_description: str, num_endings: str) -> StoryStructure:
+        '''A method for generating a story node'''
+        story_struct = self.gen_story_struct_without_arc(story_description, num_endings)
+        story_list = self.revise_story_node_without_arc(story_struct)
+        return story_list
+
+    def gen_story_struct_without_arc(self, story_description, num_endings) -> StoryStructure:
+        '''A method for generating a story node without story arc'''
+        without_arc_struct_chain = self._init_chain("without_arc/gen_story_struct")
+        input_data = {
+            "story_description": story_description,
+            "num_endings": num_endings
+        }
+        return self._process_gpt_request(
+            chain=without_arc_struct_chain,
+            input_data=input_data,
+            output_dataclass=StoryStructure,
+            verification_func=no_unreachable_nodes,
+            fallback_func=remove_unreachable_nodes
+        )
+
+    def revise_story_node_without_arc(self, story_node: StoryStructure) -> StoryStructure | None:
+        '''A method for generating a story node without story arc'''
+        without_arc_revise_chain = self._init_chain("without_arc/revise_each_node")
+        story_node_size = len(story_node.levelList)
+        story_list = []
+
+        for i in tqdm(range(story_node_size), desc="Revising each story nodes"):
+            current_story_node = story_node.levelList[i]
+            # story_list.append(current_story_node)
+
+            # Prepare input data
+            story_list_dict = [level.dict() for level in story_list]
+            current_story_node_dict = current_story_node.dict()
+            input_data = {
+                "story_list": json.dumps(story_list_dict),
+                "current_story_node": json.dumps(current_story_node_dict)
+            }
+
+            # Process the request
+            # print(f"level {i}\ninput_data:\n{input_data}")
+            new_story_node = self._process_gpt_request(
+                chain=without_arc_revise_chain,
+                input_data=input_data,
+                output_dataclass=LevelNode
+            )
+
+            if new_story_node:
+                # Transform to LevelEntityNode
+                # print(f"new_story_node is:\n{new_story_node}")
+                # story_list[i] = new_story_node # replace with the new one
+                story_list.append(new_story_node)
+            else:
+                print(f"Failed to revise the node {i+1}")
+                return None
+        story_dict = {}
+        story_dict["levelList"] = story_list
+
+        res_dataclass = parse_to_dataclass(StoryStructure, story_dict)
+        if res_dataclass:
+            return res_dataclass
+        print("Failed to parse game dictionary to StoryStructure.")
+        return None
 
     def gen_entity(self, story_node: StoryStructure) -> GameStructure:
         '''A method for generating an entity
@@ -312,114 +429,90 @@ class GPTClient:
         print("Reaching max attempts.")
         return None
 
-    def verify_doorList_correspondence(
-        self,
-        new_level_entity: EntityModel,
-        current_level: LevelNode
-    ) -> bool:
-        '''A method for verifying the correspondence between doorList and nextLevel'''
-        door_indices = {door.index\
-            for door in new_level_entity.doorList}
-        next_level_indices = {next_level.index\
-            for next_level in current_level.nextLevel}
-        if not door_indices.issubset(next_level_indices):
-            print(f"Door indices {door_indices}\
-                are not within next level indices {next_level_indices}")
-            return False
-        return True
+    # def verify_doorList_correspondence(
+    #     self,
+    #     new_level_entity: EntityModel,
+    #     current_level: LevelNode
+    # ) -> bool:
+    #     '''A method for verifying the correspondence between doorList and nextLevel'''
+    #     door_indices = {door.index\
+    #         for door in new_level_entity.doorList}
+    #     next_level_indices = {next_level.index\
+    #         for next_level in current_level.nextLevel}
+    #     if not door_indices.issubset(next_level_indices):
+    #         print(f"Door indices {door_indices}\
+    #             are not within next level indices {next_level_indices}")
+    #         return False
+    #     return True
 
 
-    def gen_level_list(self, story_node: StoryStructure) -> List[LevelEntityNode] | None:
+    def gen_level_list(self, story_node: StoryStructure, player_data: PlayerDataModel) -> List[LevelEntityNode] | None:
         '''A method for generating level list'''
 
-        level_size = len(story_node.levelList)
-        level_list = []
-        # level_dict_list = []
-        for i in tqdm(range(level_size), desc="Generating entities for levels"):
-            new_level_list = story_node.levelList[i]
-            level_list.append(new_level_list)
-
+        def gen_level_list_input(level_list: List[LevelEntityNode], cur_story: LevelNode) -> dict:
+            '''Generate input function ptr for gen_level_list'''
+            mind_reset_sentence = self._fetch_mind_reset(cur_story.storyArc)
             level_list_dict = [level.dict() for level in level_list]
-            input_data = {
-                "level_list": json.dumps(level_list_dict)
+            cur_story_dict = cur_story.dict()
+            return {
+                "mind_reset": mind_reset_sentence,
+                "player_name": player_data.name,
+                "level_list": json.dumps(level_list_dict),
+                "current_level": json.dumps(cur_story_dict)
             }
 
-            new_level_entity = self._process_gpt_request(
+        def gen_level_list_output(input_data: dict) -> LevelEntityNode | None:
+            '''Generate output function ptr for gen_level_list'''
+            return self._process_gpt_request(
                 chain=self.level_list_chain,
                 input_data=input_data,
                 output_dataclass=EntityModel,
-                # will now directly append the doorlist.\
-                # so ignore the verification function
-                # verification_func=partial(
-                #     self.verify_doorList_correspondence,
-                #     current_level=level_list[i]
-                # ),
             )
 
+        def gen_level_list_post_proc(new_level_entity: EntityModel | None, cur_level: LevelNode) -> LevelEntityNode | None:
+            '''Level list's post process method'''
+            res = None
             if new_level_entity:
-                level_list[i] = transform_LevelNode_to_LevelEntityNode(
-                    level_node=level_list[i],
+                res = transform_LevelNode_to_LevelEntityNode(
+                    level_node=cur_level,
                     entity=new_level_entity
                 )
-            else:
-                print(f"level_list is {level_list}")
-                print(f"new_level_entity is {new_level_entity}")
-                print("Reaching max attempts.")
-                return None
+            return res
 
-        return level_list
+        return self._iteratively_gen(
+            data_list=story_node.levelList,
+            get_input=gen_level_list_input,
+            get_output=gen_level_list_output,
+            post_process_func=gen_level_list_post_proc,
+            desc="Generating entities for levels"
+        )
 
-    
+        # level_size = len(story_node.levelList)
+        # level_list = []
+        # # level_dict_list = []
         # for i in tqdm(range(level_size), desc="Generating entities for levels"):
         #     new_level_list = story_node.levelList[i]
-        #     level_list.append(new_level_list)
+        #     # level_list.append(new_level_list)
 
-        #     legit = False
-        #     for _ in range(MAX_ATTEMPT):
-        #         level_list_dict = [level.dict() for level in level_list]
-        #         response = self.level_list_chain.invoke({
-        #             "level_list": json.dumps(level_list_dict)
-        #         })
-        #         res_content = response.content
-        #         # clean the response
-        #         res_content = self.clean_json(res_content)
-        #         new_level_entity = parse_to_dataclass(EntityModel, res_content)
-        #         # verify the doorList and nextLevel correspondence
-        #         if new_level_entity:
-        #             legit = self.verify_doorList_correspondence(
-        #                 new_level_entity=new_level_entity,
-        #                 current_level=level_list[i]
-        #             )
-        #             if legit:
-        #                 break
-        #             # door_indices = {door.index\
-        #             #     for door in new_level_entity.doorList}
-        #             # next_level_indices = {next_level.index\
-        #             #     for next_level in level_list[i].nextLevel}
-        #             # if not door_indices.issubset(next_level_indices):
-        #             #     print(f"Door indices {door_indices}\
-        #             #         are not within next level indices {next_level_indices}")
-        #             # else:
-        #             #     legit = True
-        #             #     break
-        #         print("Something went wrong. Retrying...")
-        #     if new_level_entity and not legit:
-        #         # rule-based modify the doorList
-        #         print("GPT generated doorList verification failed.\
-        #             Switch to Rule-based method to modify the doorList.")
-        #         for j, door in enumerate(new_level_entity.doorList):
-        #             # find the corresponding nextLevel
-        #             next_level_index = level_list[i].nextLevel[j].index
-        #             door.index = next_level_index
-        #         # verify again
-        #         # change legit
-        #         legit = self.verify_doorList_correspondence(
-        #             new_level_entity=new_level_entity,
-        #             current_level=level_list[i]
-        #         )
-        #     if new_level_entity and legit:
-        #         # level_list[i] now is a LevelNode. transform it to LevelEntityNode
-        #         level_list[i]=transform_LevelNode_to_LevelEntityNode(
+        #     level_list_dict = [level.dict() for level in level_list]
+        #     input_data = {
+        #         "level_list": json.dumps(level_list_dict)
+        #     }
+
+        #     new_level_entity = self._process_gpt_request(
+        #         chain=self.level_list_chain,
+        #         input_data=input_data,
+        #         output_dataclass=EntityModel,
+        #         # will now directly append the doorlist.\
+        #         # so ignore the verification function
+        #         # verification_func=partial(
+        #         #     self.verify_doorList_correspondence,
+        #         #     current_level=level_list[i]
+        #         # ),
+        #     )
+
+        #     if new_level_entity:
+        #         level_list[i] = transform_LevelNode_to_LevelEntityNode(
         #             level_node=level_list[i],
         #             entity=new_level_entity
         #         )
@@ -428,8 +521,48 @@ class GPTClient:
         #         print(f"new_level_entity is {new_level_entity}")
         #         print("Reaching max attempts.")
         #         return None
-        # # verify the response structure
+
         # return level_list
+    
+    def gen_level_list_without_arc(self, story_node: StoryStructure, player_data: PlayerDataModel) -> List[LevelEntityNode] | None:
+        '''A method for generating level list without arc'''
+
+        def level_list_without_arc_input(level_list: List[LevelEntityNode], cur_story: LevelNode) -> dict:
+            '''Generate input function ptr for gen_level_list'''
+            level_list_dict = [level.dict() for level in level_list]
+            cur_story_dict = cur_story.dict()
+            return {
+                "player_name": player_data.name,
+                "level_list": json.dumps(level_list_dict),
+                "current_level": json.dumps(cur_story_dict)
+            }
+
+        def level_list_without_arc_output(input_data: dict) -> LevelEntityNode | None:
+            '''Generate output function ptr for gen_level_list'''
+            level_list_without_arc_chain = self._init_chain("without_arc/level_list")
+            return self._process_gpt_request(
+                chain=self.level_list_chain,
+                input_data=input_data,
+                output_dataclass=EntityModel,
+            )
+
+        def level_list_without_arc_post_proc(new_level_entity: EntityModel | None, cur_level: LevelNode) -> LevelEntityNode | None:
+            '''Level list's post process method'''
+            res = None
+            if new_level_entity:
+                res = transform_LevelNode_to_LevelEntityNode(
+                    level_node=cur_level,
+                    entity=new_level_entity
+                )
+            return res
+
+        return self._iteratively_gen(
+            data_list=story_node.levelList,
+            get_input=level_list_without_arc_input,
+            get_output=level_list_without_arc_output,
+            post_process_func=level_list_without_arc_post_proc,
+            desc="Generating entities for levels (without arcs)"
+        )
 
     def decide_door(
         self,
@@ -546,7 +679,44 @@ class GPTClient:
             print("Failed to generate player data.")
             return None
 
-        level_list = self.gen_level_list(story_node)
+        level_list = self.gen_level_list(story_node, player_data)
+        if not level_list:
+            print("Failed to generate level list.")
+            return None
+
+        self.decide_door(level_list=level_list)
+        self.append_door_list(level_list=level_list)
+
+        game_dict["playerData"] = player_data
+        game_dict["levelList"] = level_list
+
+        res_dataclass = parse_to_dataclass(GameStructure, game_dict)
+        if res_dataclass:
+            return res_dataclass
+        print("Failed to parse game dictionary to GameStructure.")
+        return None
+    
+    def gen_entity_stepwise_without_arc(self, story_node: StoryStructure) -> GameStructure | None:
+        '''A method for generating an entity step by step.
+        Will generate the player data first, then generate the level list.
+        Level list will be generated level by level.
+        The output will be node with entity
+        '''
+        # TODO:
+        # - verify the response is in JSON
+        # - handle error
+        # handle exception
+        # story_node_dict = story_node.to_dict()
+        game_dict = {
+            "playerData": None,
+            "levelList": None
+        }
+        player_data = self.gen_player_data(story_node)
+        if not player_data:
+            print("Failed to generate player data.")
+            return None
+
+        level_list = self.gen_level_list_without_arc(story_node, player_data)
         if not level_list:
             print("Failed to generate level list.")
             return None

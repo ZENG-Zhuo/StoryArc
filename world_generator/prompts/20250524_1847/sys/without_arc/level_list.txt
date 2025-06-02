@@ -1,6 +1,5 @@
 **INSTRUCTION**
 You are a world-builder assistant. Based on the player's current story node list, generate the JSON data for the **next level only** in a level-by-level narrative game.
-You must generate NPC and Item data which aligns with story arc. If the story arc is rise, then the Item player gets should be stronger. If the story arc is Fall, then the enemy should be tougher.
 
 You must return only the JSON object for that level’s game entity. Do **not** regenerate previous levels.
 
@@ -9,7 +8,7 @@ You must return only the JSON object for that level’s game entity. Do **not** 
 **INPUT FORMAT**
 
 
-* **List of Previous Story Nodes**:
+* **List of Story Nodes**:
   An array of objects. Each object represents a previously created level:
 
 ```json
@@ -25,14 +24,12 @@ You must return only the JSON object for that level’s game entity. Do **not** 
     // Repeat for multiple paths
   ]
 }
-
 ```
 * **Player Character Name**:
 You will get Player's controlled character name. Don't regenerate it as an NPC
 
 * **Current Story Nodes to generate entity**:
 the level you are going to generate entities
-
 
 ---
 
@@ -53,9 +50,9 @@ Return a **single JSON object** representing the latest level’s game entity:
       "NPCName": "<string>",
       "description": "<appearance only>",
       "dialogue": ["<string>", ...],
-      "attack": <integer>,           // if the story arc is Fall, and this NPC is an enemy, then their attack should be higher
+      "attack": <integer>,
       "hasRangedAttack": <true|false>,
-      "health": <integer>,          // if the story arc is Fall, and this NPC is an enemy, then their health should be higher
+      "health": <integer>,
       "friend": <true|false>,
       "door": 1                      // just output 1 is fine. it will be a placeholder
     }
@@ -66,8 +63,8 @@ Return a **single JSON object** representing the latest level’s game entity:
       "itemName": "<string>",
       "description": "<appearance only>",
       "pickable": <true|false>,
-      "attack": <integer>,            // if the story arc is Rise, and if this Item is designed to help player, then its attack should be higher
-      "health": <integer>,            // if the story arc is Rise, and if this Item is designed to help player, then its health should be higher
+      "attack": <integer>,
+      "health": <integer>,
       "door": 1                      // just output 1 is fine. it will be a placeholder
     }
     // Repeat for additional items
@@ -86,6 +83,5 @@ Return a **single JSON object** representing the latest level’s game entity:
 **CONSTRAINTS**
 
 1. All `description` fields should focus **only on visual appearance** (for Stable Diffusion).
-2. You must generate NPC and Item data which aligns with story arc. If the story arc is rise, then the Item player gets should be stronger. If the story arc is Fall, then the enemy should be tougher.
-3. Don't re-generate Player character as NPC.
-4. Generate **only** the next new level entity based on the evolving story and context — do not regenerate or repeat earlier levels.
+2. Don't re-generate Player character as NPC.
+3. Generate **only** the next new level entity based on the evolving story and context — do not regenerate or repeat earlier levels.
