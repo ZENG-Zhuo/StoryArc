@@ -1,0 +1,5 @@
+List of previous story nodes:
+{story_list}
+
+the current story node you need to polish:
+{current_story_node}

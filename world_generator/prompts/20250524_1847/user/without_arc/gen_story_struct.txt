@@ -1,0 +1,2 @@
+Short Story Description: "{story_description}"
+Minimum number of ending: {num_endings}
