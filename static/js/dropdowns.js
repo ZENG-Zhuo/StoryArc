@@ -3,7 +3,8 @@ const storyArcOptions = [
     { value: 'rise-fall-rise', label: 'Rise-Fall-Rise' },
     { value: 'fall-rise', label: 'Fall-Rise' },
     { value: 'steady-rise', label: 'Steady Rise' },
-    { value: 'steady-fall', label: 'Steady Fall' }
+    { value: 'steady-fall', label: 'Steady Fall' },
+    { value: 'no-arc', label: 'No Arc' }
 ];
 
 const endingCountOptions = [

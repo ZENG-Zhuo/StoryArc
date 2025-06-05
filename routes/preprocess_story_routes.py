@@ -25,7 +25,12 @@ def preprocess_story():
 
     try:
         # gen_story_node now returns a StoryStructure instance directly
-        story_structure: StoryStructure = story_generator.gen_story_node(story_description, story_arc, num_endings)
+        story_structure: StoryStructure
+        
+        if (story_arc != "no-arc"):
+            story_structure = story_generator.gen_story_node(story_description, story_arc, num_endings)
+        else:
+            story_structure = story_generator.gen_story_node_no_arc(story_description, num_endings)
         result = story_structure.to_dict()
     except Exception as e:
         return jsonify({"error": f"Failed to generate or process story data: {str(e)}"}), 500
