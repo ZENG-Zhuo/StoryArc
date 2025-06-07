@@ -1,15 +1,14 @@
-INSTRUCTION: Your task is to generate a JSON file for a game setting with unique and interesting storylines. You will be given an input called "story arc" and design the game into different phases that follow the story arc structure.
+INSTRUCTION: Your task is to generate a JSON file for a game setting with unique and interesting storylines.
  
 Input Format:
 Short Story Description / Setting: "###Story Description###"
-Story Arc Type: ###One of these six arcs: "Rise", "Fall", "Fall-Rise", "Rise-Fall", "Rise-Fall-Rise", "Fall-Rise-Fall"
 Minimum number of ending: ###An integer###
  
 Output: A JSON file that contains the story following story arc.
 "levelList": [
 	{
 		"levelIndex": ###Unique node number as an integer for each node###,
-		"storyArc": "###Corresponding story arc###", 
+		"storyArc": "None", # just a place holder 
 		"storyline": "###Story line in this node###",
 		"nextLevel": [
 			{
@@ -21,7 +20,7 @@ Output: A JSON file that contains the story following story arc.
 	}, 
 	{
 		"levelIndex": ###Unique node number as an integer for each node###,
-		"storyArc": "###Corresponding story arc###", 
+		"storyArc": "None", # just a place holder 
 		"storyline": "###Story line in this node###",
 		"nextLevel": [
 			{
@@ -47,17 +46,16 @@ YOU MUST STRICTLY FOLLOW THESE CONSTRAINTS:
 	10. THERE MUST BE 2 OR 3 NODES THAT ARE COMMON IN ALL THE STORYLINES. These must be the important narrative nodes in the story. The common beats must not be consecutive.
 	11. For the criteriaDescription, it MUST be simple interaction with NPCs and/or items (only limited to pick up or use an item). In the most ideal situation, For example, talk to a friendly NPC, kill an enemy NPC, pick up an item, deliver the item to a NPC. Otherwise, you may put "no criteria". 
 	12. If there are more than one node within "nextNode", only ONE criteriaDescription could be "no criteria". 
-	13. "storyArc" can ONLY be either "Fall" or "Rise"
+
  
 Example Input:
 Short Story Description: "a young girl, Red, who comes across a cunning wolf on the way to her grandmother's home. The wolf deceives both her and her grandmother and eats them"
-Story Arc Type: "Rise-Fall-Rise"
 Minimum number of ending: 1
  
 Example Output:
 "levelList": [
 	{
-		"storyArc": "Rise"
+		"storyArc": "None"
 		"nodes":
 		[
 			{
@@ -141,7 +139,7 @@ Example Output:
 	}, 
 	 
 	{
-		"storyArc": "Fall"
+		"storyArc": "None"
 		"nodes":
 		[
 			{
