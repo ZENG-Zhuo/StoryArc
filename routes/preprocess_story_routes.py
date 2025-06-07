@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify
+import os
+from flask import Blueprint, current_app, request, jsonify, session
 import json
 import re
 
@@ -13,6 +14,14 @@ story_bp = Blueprint('story_bp', __name__)
 # Initialize service
 story_generator = GPTClient()
 
+
+def save_result_to_static(session_id, filename, result):
+    session_dir = os.path.join(current_app.static_folder, session_id)
+    os.makedirs(session_dir, exist_ok=True)
+    file_path = os.path.join(session_dir, filename)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
 @story_bp.route('/preprocess_story', methods=['POST'])
 def preprocess_story():
     data = request.json
@@ -24,33 +33,33 @@ def preprocess_story():
         return jsonify({"error": "Missing story description or story arc"}), 400
 
     try:
-        # gen_story_node now returns a StoryStructure instance directly
         story_structure: StoryStructure = story_generator.gen_story_node(story_description, story_arc, num_endings)
         result = story_structure.to_dict()
+
+        # Save to static/{session_id}/preprocessed_story.json
+        save_result_to_static(session["session_id"], 'preprocessed_story.json', result)
+
     except Exception as e:
         return jsonify({"error": f"Failed to generate or process story data: {str(e)}"}), 500
 
     return jsonify(result)
 
-
-
 @story_bp.route('/generate_entities', methods=['POST'])
 def generate_entities():
     data = request.json
     print("Received data:", data)
-    
+
     try:
-        # Parse the input into a StoryStructure instance
         story_node = StoryStructure(**data)
     except Exception as e:
         return jsonify({"error": f"Invalid StoryStructure input: {str(e)}"}), 400
 
     try:
-        # gen_entity now returns a GameStructure instance
         game_structure: GameStructure = story_generator.gen_entity_stepwise(story_node)
-
-        # Convert to dictionary for JSON response
         result = game_structure.to_dict()
+
+        # Save to static/{session_id}/generated_entities.json
+        save_result_to_static(session["session_id"], 'generated_entities.json', result)
 
         return jsonify(result)
     except Exception as e:

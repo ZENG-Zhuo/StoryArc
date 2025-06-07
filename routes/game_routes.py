@@ -5,6 +5,15 @@ from flask import Blueprint, request, jsonify, current_app, send_from_directory,
 
 game_bp = Blueprint('game_bp', __name__)
 
+
+
+def save_result_to_static(session_id, filename, result):
+    session_dir = os.path.join(current_app.static_folder, session_id)
+    os.makedirs(session_dir, exist_ok=True)
+    file_path = os.path.join(session_dir, filename)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        json.dump(result, f, ensure_ascii=False, indent=2)
+
 @game_bp.route('/save_generated_json', methods=['POST'])
 def save_generated_json():
     data = request.get_json()
@@ -21,6 +30,8 @@ def save_generated_json():
     try:
         with open(file_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=2)
+        
+        save_result_to_static(session['session_id'], filename, data)
 
         return jsonify({
             'status': 'success',
