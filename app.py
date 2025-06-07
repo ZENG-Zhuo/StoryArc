@@ -3,8 +3,10 @@ from flask import Flask, render_template, session
 from routes.image_routes import image_bp
 from routes.preprocess_story_routes import story_bp
 from routes.game_routes import game_bp
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.register_blueprint(image_bp)
 app.register_blueprint(story_bp)
 app.register_blueprint(game_bp)
@@ -21,4 +23,4 @@ def home():
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')

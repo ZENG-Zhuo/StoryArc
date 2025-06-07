@@ -75,6 +75,8 @@ function LoadUnityGame() {
       };
     })
     .catch((message) => {
-      alert(message);
+      document.getElementById("errorModalLabel").innerText = "Unity Load Error";
+      document.getElementById("errorModalMessage").innerText = message;
+      $("#errorModal").modal("show");
     });
 }

@@ -1,7 +1,8 @@
+// Global variable to hold the fetched entity-enriched structure
 let currentOriginalJSON = null;
 
-async function extractEntities(retry = 10) {
-  const graphJson = exportGraphToJson(gNodes, gLinks); // assumes this function exists
+async function fetchEntityData(retry = 10) {
+  const graphJson = exportGraphToJson(gNodes, gLinks);
 
   try {
     const response = await fetch("/generate_entities", {
@@ -15,12 +16,10 @@ async function extractEntities(retry = 10) {
     if (!response.ok) {
       const errorData = await response.json();
       console.error("Server returned an error:", errorData);
-
       const message =
         errorData.error || response.statusText || "Unknown error occurred.";
       $("#errorModalMessage").text(message);
       $("#errorModal").modal("show");
-
       return null;
     }
 
@@ -29,75 +28,97 @@ async function extractEntities(retry = 10) {
 
     console.log("Received entity-enriched structure:", result);
 
-    // 🛑 Check if the first level's doorList is empty
+    // Check for bad doorList and retry if needed
     if (
       retry &&
       Array.isArray(result.levelList) &&
       result.levelList.length > 0 &&
       result.levelList[0].entity &&
       Array.isArray(result.levelList[0].entity.doorList) &&
-      result.levelList[0].entity.doorList.length === 0
+      result.levelList[0].entity.doorList.length > 0 &&
+      (result.levelList[0].entity.doorList[0].index === -1 ||
+        result.levelList[0].entity.doorList[0].index === 0)
     ) {
-      console.warn("First level doorList is empty. Regenerating entities...");
-      return await extractEntities(retry - 1); // Retry up to 10 times
+      console.warn(
+        "First level doorList is empty or invalid. Regenerating entities..."
+      );
+      return await fetchEntityData(retry - 1);
     }
 
-    const entries = [];
-    console.log("playerData", result.playerData);
-
-    // ➕ Extract playerData
-    if (result.playerData) {
-      entries.push({
-        name: result.playerData.name || "Player",
-        prompt: result.playerData.description || "No description.",
-        type: "Player",
-      });
-    }
-    console.log("Added Players", entries);
-
-    console.log("levelList", result.levelList);
-
-    // Extract level entities
-    if (Array.isArray(result.levelList)) {
-      result.levelList.forEach((level) => {
-        const entity = level.entity;
-        console.log("entity", entity);
-
-        // NPCs
-        if (entity && Array.isArray(entity.NPCList)) {
-          entity.NPCList.forEach((npc) => {
-            entries.push({
-              name: npc.NPCName,
-              prompt: npc.description,
-              type: "NPC",
-            });
-          });
+    // Validate door indices
+    const levelIndexSet = new Set(result.levelList.map((l) => l.levelIndex));
+    for (const level of result.levelList) {
+      if (level.entity.doorList && level.entity.doorList.length > 0) {
+        for (const door of level.entity.doorList) {
+          if (door.index !== -1) {
+            if (
+              !levelIndexSet.has(door.index) ||
+              door.index === level.levelIndex
+            ) {
+              console.warn(
+                `Invalid door index ${door.index} on level ${level.levelIndex}. Setting to -1.`
+              );
+              door.index = -1;
+            }
+          }
         }
-
-        // Items
-        if (entity && Array.isArray(entity.itemList)) {
-          entity.itemList.forEach((item) => {
-            entries.push({
-              name: item.itemName,
-              prompt: item.description,
-              type: "Item",
-            });
-          });
-        }
-      });
+      }
     }
 
-    return entries;
+    return result;
   } catch (err) {
     console.error("Request failed:", err);
-
     $("#errorModalMessage").text(
       "Failed to connect to entity generation service."
     );
     $("#errorModal").modal("show");
-
     return null;
   }
+}
+
+function extractEntitiesFromResult() {
+  const entries = [];
+  const result = currentOriginalJSON;
+  if (!result) return entries;
+
+  console.log("playerData", result.playerData);
+
+  if (result.playerData) {
+    entries.push({
+      name: result.playerData.name || "Player",
+      prompt: result.playerData.description || "No description.",
+      type: "Player",
+    });
+  }
+
+  if (Array.isArray(result.levelList)) {
+    result.levelList.forEach((level) => {
+      const entity = level.entity;
+      if (!entity) return;
+
+      if (Array.isArray(entity.NPCList)) {
+        entity.NPCList.forEach((npc) => {
+          entries.push({
+            name: npc.NPCName,
+            prompt: npc.description,
+            type: "NPC",
+          });
+        });
+      }
+
+      if (Array.isArray(entity.itemList)) {
+        entity.itemList.forEach((item) => {
+          entries.push({
+            name: item.itemName,
+            prompt: item.description,
+            type: "Item",
+          });
+        });
+      }
+    });
+  }
+
+  return entries;
 }
 
 const spriteMap = {};
@@ -109,7 +130,7 @@ function displayCharacters(characters) {
   const seenCharacters = new Set();
 
   characters.forEach((character) => {
-    const key = `${character.type}:${character.name}:${character.prompt}`; // prompt = description
+    const key = `${character.type}:${character.name}:${character.description}`;
 
     if (seenCharacters.has(key)) return;
     seenCharacters.add(key);
@@ -121,52 +142,76 @@ function displayCharacters(characters) {
     };
 
     const characterCard = $(`
-      <div class="col-md-4 mb-4">
-        <div class="card" style="background-color: #393E46; color: #EEEEEE;">
-          <div class="card-body">
-            <h5 class="card-title d-flex align-items-center justify-content-between">
-              ${character.name}
-              <span class="badge bg-secondary text-light">
-                <i class="${
-                  typeIcons[character.type] || "fa-solid fa-question"
-                } me-1"></i> 
-                ${character.type}
-              </span>
-            </h5>
-            <p>${character.prompt}</p>
-            <button class="btn btn-primary generateSprite" 
-              data-prompt="${character.prompt}" 
-              data-name="${character.name}" 
-              data-type="${character.type}" 
-              data-description="${character.prompt}">Generate Sprite</button>
-            <button class="btn btn-success regenerateSprite" style="display:none;">Regenerate Sprite</button>
-            <img src="" alt="${
-              character.name
-            } sprite" style="display:none; width: 150px; height: 150px;" class="sprite-image">
-            <i class="fa-solid fa-spinner loading-icon" style="display:none; font-size: 24px; color: #00ADB5;"></i>
-          </div>
+  <div class="col-md-4 mb-4">
+    <div class="card" style="background-color: #393E46; color: #EEEEEE;">
+      <div class="card-body">
+        <h5 class="card-title d-flex align-items-center justify-content-between">
+          ${character.name}
+          <span class="badge bg-secondary text-light">
+            <i class="${
+              typeIcons[character.type] || "fa-solid fa-question"
+            } me-1"></i> 
+            ${character.type}
+          </span>
+        </h5>
+
+        <div class="form-group">
+          <label class="form-label">Prompt</label>
+          <textarea
+            class="form-control custom-input mb-3 character-prompt-input"
+            style="background-color: #222831; color: #EEEEEE; border: 1px solid #00ADB5; overflow:hidden; resize:none;"
+            oninput="this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px';"
+          >${character.prompt}
+          </textarea>
         </div>
+
+        <button class="btn btn-primary generateSprite sprite-button" 
+          data-name="${character.name}" 
+          data-type="${character.type}" 
+          data-prompt="${character.prompt}"
+          data-description="${character.prompt}"
+          >
+          Generate Sprite
+        </button>
+
+        <button class="btn btn-success regenerateSprite" style="display:none;">Regenerate Sprite</button>
+
+        <img src="" alt="${character.name} sprite" 
+          style="display:none; width: 150px; height: 150px;" 
+          class="sprite-image">
+
+        <i class="fa-solid fa-spinner loading-icon" 
+          style="display:none; font-size: 24px; color: #00ADB5;"></i>
       </div>
-    `);
+    </div>
+  </div>
+`);
+
+    // Bind the onChange event to update the button's data-prompt attribute
+    characterCard.find(".character-prompt-input").on("input", function () {
+      const newPrompt = $(this).val();
+      const cardBody = $(this).closest(".card-body");
+      cardBody.find(".sprite-button").attr("data-prompt", newPrompt);
+    });
 
     charactersList.append(characterCard);
     debugV.charactersList = charactersList;
   });
 
   $(".generateSprite").click(function () {
-    const prompt = $(this).data("prompt");
-    const name = $(this).data("name");
-    const type = $(this).data("type");
-    const desc = $(this).data("description");
+    const prompt = $(this)[0].dataset.prompt;
+    const name = $(this)[0].dataset.name;
+    const type = $(this)[0].dataset.type;
+    const desc = $(this)[0].dataset.description;
     generateSprite(this, prompt, type, name, desc);
   });
 
   $(".regenerateSprite").click(function () {
     const button = $(this).siblings(".generateSprite");
-    const prompt = button.data("prompt");
-    const name = button.data("name");
-    const type = button.data("type");
-    const desc = button.data("description");
+    const prompt = button[0].dataset.prompt;
+    const name = button[0].dataset.name;
+    const type = button[0].dataset.type;
+    const desc = button[0].dataset.description;
     generateSprite(this, prompt, type, name, desc);
   });
 
@@ -174,6 +219,7 @@ function displayCharacters(characters) {
 }
 
 function generateSprite(button, prompt, type, name, description) {
+  console.log("Generating sprite for:", prompt, type, name, description);
   const loadingIcon = $(button).siblings(".loading-icon");
   loadingIcon.show().addClass("fa-spin");
 

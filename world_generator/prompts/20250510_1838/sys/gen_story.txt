@@ -48,6 +48,7 @@ YOU MUST STRICTLY FOLLOW THESE CONSTRAINTS:
 	11. For the criteriaDescription, it MUST be simple interaction with NPCs and/or items (only limited to pick up or use an item). In the most ideal situation, For example, talk to a friendly NPC, kill an enemy NPC, pick up an item, deliver the item to a NPC. Otherwise, you may put "no criteria". 
 	12. If there are more than one node within "nextNode", only ONE criteriaDescription could be "no criteria". 
 	13. "storyArc" can ONLY be either "Fall" or "Rise"
+	14. -1 means returning to menu. So the ending level's next should be -1. And you shouldn't have any level with ID -1
  
 Example Input:
 Short Story Description: "a young girl, Red, who comes across a cunning wolf on the way to her grandmother's home. The wolf deceives both her and her grandmother and eats them"

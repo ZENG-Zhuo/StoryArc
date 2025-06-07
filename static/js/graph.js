@@ -4,19 +4,44 @@ let svg,
   gNodes,
   gLinks,
   pendingConnection = null,
-  initialized = false;
+  initialized = false,
+  previousDetails = false,
+  gJSON = {};
 
-function visualizeGraph(nodes, links) {
+function setJson(newJSON) {
+  gJSON = newJSON;
+}
+
+function handleShowPlayer() {
+  const playerData = gJSON.playerData;
+  renderCharacterEditor(playerData, (newData) => {
+    gJSON.playerData = newData;
+    console.log("Updated player data:", gJSON.playerData);
+  });
+}
+
+function visualizeGraph(nodes, links, details = false) {
   gNodes = nodes;
   gLinks = links;
-  d3.select("#contextMenu").style("display", "none");
+  (details ? d3.select("#contextMenu1c") : d3.select("#contextMenu")).style(
+    "display",
+    "none"
+  );
 
-  const width = $("#graphContainer").width();
+  const width = details
+    ? $("#graphContainer1c").width()
+    : $("#graphContainer").width();
   const height = 500;
 
+  if (previousDetails !== details) {
+    initialized = false;
+    previousDetails = details;
+  }
+
   if (!initialized) {
-    svg = d3
-      .select("#graphContainer")
+    svg = (
+      details ? d3.select("#graphContainer1c") : d3.select("#graphContainer")
+    )
       .append("svg")
       .attr("width", "100%")
       .attr("height", height)
@@ -65,34 +90,44 @@ function visualizeGraph(nodes, links) {
       .force("charge", d3.forceManyBody().strength(-300))
       .force("center", d3.forceCenter(width / 2, height / 2));
 
-    svg.on("contextmenu", function (event) {
-      if (event.target.tagName === "svg") {
-        event.preventDefault();
-        const [x, y] = d3.pointer(event, this);
-        showContextMenu(event.pageX, event.pageY, [
-          {
-            label: "➕ Add Node",
-            action: () => {
-              const usedIds = new Set(
-                nodes.map((node) => parseInt(node.id, 10))
-              );
+    if (!details) {
+      svg.on("contextmenu", function (event) {
+        if (event.target.tagName === "svg") {
+          event.preventDefault();
+          const [x, y] = d3.pointer(event, this);
+          showContextMenu(
+            event.pageX,
+            event.pageY,
+            [
+              {
+                label: "➕ Add Node",
+                action: () => {
+                  const usedIds = new Set(
+                    nodes.map((node) => parseInt(node.id, 10))
+                  );
 
-              // Find the smallest unused positive integer
-              let newId = 1;
-              while (usedIds.has(newId)) {
-                newId++;
-              }
+                  // Find the smallest unused positive integer
+                  let newId = 1;
+                  while (usedIds.has(newId)) {
+                    newId++;
+                  }
 
-              nodes.push({ id: newId, label: "New Node", x, y });
-              visualizeGraph(nodes, links);
-            },
-          },
-        ]);
-      }
-    });
+                  nodes.push({ id: newId, label: "New Node", x, y });
+                  visualizeGraph(nodes, links);
+                },
+              },
+            ],
+            details
+          );
+        }
+      });
+    }
 
     d3.select("body").on("click", () => {
-      d3.select("#contextMenu").style("display", "none");
+      (details ? d3.select("#contextMenu1c") : d3.select("#contextMenu")).style(
+        "display",
+        "none"
+      );
     });
 
     initialized = true;
@@ -162,23 +197,32 @@ function visualizeGraph(nodes, links) {
     .style("cursor", "pointer")
     .on("contextmenu", (event, d) => {
       event.preventDefault();
-      showContextMenu(event.pageX, event.pageY, [
-        {
-          label: "✏️ Edit Edge Label",
-          action: () =>
-            promptLabel(d, "label", () => visualizeGraph(nodes, links)),
-        },
-        {
-          label: "🗑 Delete Edge",
-          action: () => {
-            const index = links.indexOf(d);
-            if (index !== -1) {
-              links.splice(index, 1);
-              visualizeGraph(nodes, links);
-            }
-          },
-        },
-      ]);
+      showContextMenu(
+        event.pageX,
+        event.pageY,
+        [
+          ...(details
+            ? []
+            : [
+                {
+                  label: "✏️ Edit Edge Label",
+                  action: () =>
+                    promptLabel(d, "label", () => visualizeGraph(nodes, links)),
+                },
+                {
+                  label: "🗑 Delete Edge",
+                  action: () => {
+                    const index = links.indexOf(d);
+                    if (index !== -1) {
+                      links.splice(index, 1);
+                      visualizeGraph(nodes, links);
+                    }
+                  },
+                },
+              ]),
+        ],
+        details
+      );
     })
     .merge(edgeLabels)
     .text((d) => d.label);
@@ -206,34 +250,61 @@ function visualizeGraph(nodes, links) {
   };
   const contextmenuCallback = (event, d) => {
     event.preventDefault();
-    showContextMenu(event.pageX, event.pageY, [
-      {
-        label: "✏️ Edit Node Label",
-        action: () =>
-          promptLabel(d, "label", () => visualizeGraph(nodes, links)),
-      },
-      {
-        label: "🔗 Add Connection",
-        action: () => {
-          pendingConnection = d;
-        },
-      },
-      {
-        label: "🗑 Delete Node",
-        action: () => {
-          const nodeIndex = nodes.indexOf(d);
-          if (nodeIndex !== -1) {
-            nodes.splice(nodeIndex, 1);
-            for (let i = links.length - 1; i >= 0; i--) {
-              if (links[i].source.id === d.id || links[i].target.id === d.id) {
-                links.splice(i, 1);
-              }
-            }
-            visualizeGraph(nodes, links);
-          }
-        },
-      },
-    ]);
+    showContextMenu(
+      event.pageX,
+      event.pageY,
+      [
+        ...(details
+          ? []
+          : [
+              {
+                label: "✏️ Edit Node Label",
+                action: () =>
+                  promptLabel(d, "label", () => visualizeGraph(nodes, links)),
+              },
+              {
+                label: "🔗 Add Connection",
+                action: () => {
+                  pendingConnection = d;
+                },
+              },
+              {
+                label: "🗑 Delete Node",
+                action: () => {
+                  const nodeIndex = nodes.indexOf(d);
+                  if (nodeIndex !== -1) {
+                    nodes.splice(nodeIndex, 1);
+                    for (let i = links.length - 1; i >= 0; i--) {
+                      if (
+                        links[i].source.id === d.id ||
+                        links[i].target.id === d.id
+                      ) {
+                        links.splice(i, 1);
+                      }
+                    }
+                    visualizeGraph(nodes, links);
+                  }
+                },
+              },
+            ]),
+        ...(details
+          ? [
+              {
+                label: "ℹ️ View Details",
+                action: () => {
+                  console.log("Showing details for", d);
+                  console.log("Current JSON: ", gJSON);
+                  // Your detail-handling logic here
+                  openEditor(gJSON.levelList[d.index].entity, (newJSON) => {
+                    gJSON.levelList[d.index].entity = newJSON;
+                  });
+                },
+              },
+            ]
+          : []),
+      ],
+      details
+    );
   };
 
   node
@@ -312,7 +383,7 @@ function visualizeGraph(nodes, links) {
 }
 
 let debugVal = {};
-function validateGraph() {
+function validateGraph(gNodes, gLinks) {
   const adjList = new Map();
   const inDegree = new Map();
   const allNodeIds = new Set();

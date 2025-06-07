@@ -40,9 +40,8 @@ async function handleVisualizeStory() {
     $("#stage1b").hide();
   }
 }
-let debugV = {};
-async function handleProceedToSpriteSelection() {
-  const validation = validateGraph();
+async function handleShowDetail() {
+  const validation = validateGraph(gNodes, gLinks);
 
   if (
     !validation.isAcyclic ||
@@ -57,13 +56,41 @@ async function handleProceedToSpriteSelection() {
 
   // Show stage 2 and spinner
   $("#stage1b").hide();
+  $("#stage1c").show();
+
+  $("#loadingSpinner1c").show();
+  $("#graphContainer1c").hide();
+
+  try {
+    await fetchEntityData();
+    setJson(currentOriginalJSON);
+    
+    // Show the enriched graph
+    visualizeGraph(gNodes, gLinks, true);
+
+  } catch (err) {
+    console.error("Failed to enriching entities:", err);
+    alert("An error occurred while enriching entities.");
+  } finally {
+    // Always hide the spinner
+    $("#loadingSpinner1c").hide();
+    $("#graphContainer1c").show();
+  }
+
+}
+// 
+
+let debugV = {};
+async function handleProceedToSpriteSelection() {
+  
+  $("#stage1c").hide();
   $("#stage2").show();
   const charactersList = $("#charactersList");
   charactersList.empty();
   $("#loadingSpinner2").show();
 
   try {
-    const characters = await extractEntities();
+    const characters = extractEntitiesFromResult();
     displayCharacters(characters);
   } catch (err) {
     console.error("Failed to extract characters:", err);
@@ -124,4 +151,9 @@ function showSuccess(msg) {
 
 function showError(msg) {
   alert(msg);
+}
+
+function handleJumpToGame() {
+  $("#stage1, #stage1b, #stage2").hide();
+  $("#stage3").show();
 }

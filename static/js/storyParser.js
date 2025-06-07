@@ -1,5 +1,5 @@
 async function extractStoryGraph(storyDescription, storyArc, numEndings) {
-  const MAX_RETRY_COUNT = 3;
+  const MAX_RETRY_COUNT = 5;
   let attempt = 0;
 
   while (attempt < MAX_RETRY_COUNT) {
@@ -11,9 +11,15 @@ async function extractStoryGraph(storyDescription, storyArc, numEndings) {
 
     const graph = { nodes: [], edges: [] };
     const nodeIdSet = new Set();
-
+    let graphInvalid = false;
     // Build nodes
     storyData.levelList.forEach((level) => {
+      if (level.levelIndex == -1) {
+        console.warn(
+          `Invalid node: levelIndex is -1 for level ${level.storyline}.`
+        );
+        graphInvalid = true;
+      }
       graph.nodes.push({
         id: level.levelIndex,
         label: level.storyline,
@@ -23,7 +29,6 @@ async function extractStoryGraph(storyDescription, storyArc, numEndings) {
     });
 
     // Build edges
-    let hasInvalidEdge = false;
     storyData.levelList.forEach((level) => {
       if (level.nextLevel && Array.isArray(level.nextLevel)) {
         level.nextLevel.forEach((next) => {
@@ -32,7 +37,7 @@ async function extractStoryGraph(storyDescription, storyArc, numEndings) {
               console.warn(
                 `Invalid edge: target node ${next.index} not found.`
               );
-              hasInvalidEdge = true;
+              graphInvalid = true;
             }
             graph.edges.push({
               source: level.levelIndex,
@@ -44,7 +49,20 @@ async function extractStoryGraph(storyDescription, storyArc, numEndings) {
       }
     });
 
-    if (!hasInvalidEdge) {
+    const validation = validateGraph(graph.nodes, graph.edges);
+    console.log("Nodes:", graph.nodes);
+    console.log("Edges:", graph.edges);
+    const graphValid = validation.isAcyclic && validation.isConnected && validation.hasSingleStartNode;
+    if (!graphValid) {
+      console.warn(
+        `Graph validation failed: ${validation.message}.`
+      );
+    }
+    
+    // graphInvalid = graphInvalid || !graphValid;
+
+
+    if (!graphInvalid) {
       return graph;
     }
 

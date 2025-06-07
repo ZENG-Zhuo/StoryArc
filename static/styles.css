@@ -1,139 +1,286 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box !important;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box !important;
 }
 
-html, body {
-    height: 100%;
+html,
+body {
+  height: 100%;
 }
 
 body {
-    display: table;
-    width: 100%;
-    height: 100%;
-    background-color: #222831;  /* Dark background color */
-    color: #EEEEEE;  /* Light text color */
-    line-height: 1.6;
-    position: relative;
-    font-family: sans-serif;
-    overflow: auto;
+  display: table;
+  width: 100%;
+  height: 100%;
+  background-color: #222831; /* Dark background color */
+  color: #eeeeee; /* Light text color */
+  line-height: 1.6;
+  position: relative;
+  font-family: sans-serif;
+  overflow: auto;
 }
 
 .lines {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    margin: auto;
-    width: 90vw;
-    display: flex;
-    justify-content: space-between; /* Distribute lines evenly */
-    z-index: -1; /* Move the lines behind other elements */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  margin: auto;
+  width: 90vw;
+  display: flex;
+  justify-content: space-between; /* Distribute lines evenly */
+  z-index: -1; /* Move the lines behind other elements */
 }
 
 .line {
-    position: relative;
-    width: 1px;
-    height: 100%;
-    overflow: hidden;
+  position: relative;
+  width: 1px;
+  height: 100%;
+  overflow: hidden;
 }
 
 .line::after {
-    content: '';
-    display: block;
-    position: absolute;
-    height: 15vh;
-    width: 100%;
-    top: -50%;
-    left: 0;
-    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #EEEEEE 75%, #EEEEEE 100%);
-    animation: drop 7s 0s infinite;
-    animation-fill-mode: forwards;
-    animation-timing-function: cubic-bezier(0.4, 0.26, 0, 0.97);
+  content: "";
+  display: block;
+  position: absolute;
+  height: 15vh;
+  width: 100%;
+  top: -50%;
+  left: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    #eeeeee 75%,
+    #eeeeee 100%
+  );
+  animation: drop 7s 0s infinite;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.4, 0.26, 0, 0.97);
 }
 
 /* Different colors for each line's pseudo-element */
-.line:nth-child(1)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #00ADB5 75%, #00ADB5 100%); animation-delay: 0.5s; }
-.line:nth-child(2)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgb(0, 173, 181) 75%, rgb(0, 173, 181) 100%); animation-delay: 1s; }
-.line:nth-child(3)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgb(34, 40, 49) 75%, rgb(34, 40, 49) 100%); animation-delay: 1.5s; }
-.line:nth-child(4)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgb(57, 62, 70) 75%, rgb(57, 62, 70) 100%); animation-delay: 2s; }
-.line:nth-child(5)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #FF4500 75%, #FF4500 100%); animation-delay: 2.5s; }
-.line:nth-child(6)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #20B2AA 75%, #20B2AA 100%); animation-delay: 3s; }
-.line:nth-child(7)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #DC143C 75%, #DC143C 100%); animation-delay: 3.5s; }
-.line:nth-child(8)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #00FA9A 75%, #00FA9A 100%); animation-delay: 4s; }
-.line:nth-child(9)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #FF1493 75%, #FF1493 100%); animation-delay: 4.5s; }
-.line:nth-child(10)::after { background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, #00BFFF 75%, #00BFFF 100%); animation-delay: 5s; }
+.line:nth-child(1)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    #00adb5 75%,
+    #00adb5 100%
+  );
+  animation-delay: 0.5s;
+}
+.line:nth-child(2)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgb(0, 173, 181) 75%,
+    rgb(0, 173, 181) 100%
+  );
+  animation-delay: 1s;
+}
+.line:nth-child(3)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgb(34, 40, 49) 75%,
+    rgb(34, 40, 49) 100%
+  );
+  animation-delay: 1.5s;
+}
+.line:nth-child(4)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    rgb(57, 62, 70) 75%,
+    rgb(57, 62, 70) 100%
+  );
+  animation-delay: 2s;
+}
+.line:nth-child(5)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    #ff4500 75%,
+    #ff4500 100%
+  );
+  animation-delay: 2.5s;
+}
+.line:nth-child(6)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    #20b2aa 75%,
+    #20b2aa 100%
+  );
+  animation-delay: 3s;
+}
+.line:nth-child(7)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    #dc143c 75%,
+    #dc143c 100%
+  );
+  animation-delay: 3.5s;
+}
+.line:nth-child(8)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    #00fa9a 75%,
+    #00fa9a 100%
+  );
+  animation-delay: 4s;
+}
+.line:nth-child(9)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    #ff1493 75%,
+    #ff1493 100%
+  );
+  animation-delay: 4.5s;
+}
+.line:nth-child(10)::after {
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 0%,
+    #00bfff 75%,
+    #00bfff 100%
+  );
+  animation-delay: 5s;
+}
+
+body {
+  background-color: #222831;
+  color: #eeeeee;
+}
+
+.form-control {
+  background-color: #393e46;
+  color: #eeeeee;
+  border: 1px solid #00adb5;
+  border-radius: 6px;
+  padding: 6px 12px;
+}
+
+.form-control:focus {
+  background-color: #393e46;
+  color: #eeeeee;
+  border: 1px solid #00adb5;
+  outline: none;
+  box-shadow: none;
+}
+
+.list-group-header {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #00adb5;
+  margin: 1rem 0 0.5rem;
+}
+
+.list-group {
+  margin-bottom: 1rem;
+}
+
+.list-group-scroll {
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.list-group-item {
+  background-color: #393e46 !important;
+  color: #eeeeee;
+  border: 1px solid #555 !important;
+  border-radius: 6px !important;
+  margin-bottom: 8px;
+  padding: 1rem;
+}
+
+textarea.character-prompt-input {
+  min-height: 40px;
+}
+
+.tile-color-preview {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin: 10px 0;
+  border: 4px solid #00adb5;
+}
 
 .modal-content {
-    border: 2px solid #00ADB5;
-    border-radius: 10px;
-  }
-  
-  .modal-title {
-    color: #00ADB5;
-  }
-  
-  .btn-info {
-    background-color: #00ADB5;
-    border: none;
-  }
-  
-  .btn-info:hover {
-    background-color: #009ca5;
-  }
-  
+  border: 2px solid #00adb5;
+  border-radius: 10px;
+}
+
+.modal-title {
+  color: #00adb5;
+}
+
+.btn-info {
+  background-color: #00adb5;
+  border: none;
+}
+
+.btn-info:hover {
+  background-color: #009ca5;
+}
 
 .scrollable {
-    width: 80vw;        /* 80% of the viewport width */
-    height: 60vh;       /* 60% of the viewport height */
-    overflow-y: auto;   /* Enable vertical scrolling only */
-    overflow-x: hidden; /* Disable horizontal scrolling */
-    /* border: 1px solid #ccc; Add a border for visibility */
-    padding: 10px;      /* Add some padding */
-    /* box-sizing: border-box; Include padding and border in width/height */
+  width: 80vw; /* 80% of the viewport width */
+  height: 60vh; /* 60% of the viewport height */
+  overflow-y: auto; /* Enable vertical scrolling only */
+  overflow-x: hidden; /* Disable horizontal scrolling */
+  /* border: 1px solid #ccc; Add a border for visibility */
+  padding: 10px; /* Add some padding */
+  /* box-sizing: border-box; Include padding and border in width/height */
 }
 
 /* Custom scrollbar styles */
 .scrollable::-webkit-scrollbar {
-    width: 12px; /* Width of the scrollbar */
+  width: 12px; /* Width of the scrollbar */
 }
 
 .scrollable::-webkit-scrollbar-track {
-    background: #f1f1f1; /* Background of the track */
-    border-radius: 10px; /* Round edges */
+  background: #f1f1f1; /* Background of the track */
+  border-radius: 10px; /* Round edges */
 }
 
 .scrollable::-webkit-scrollbar-thumb {
-    background: #888; /* Color of the scrollbar thumb */
-    border-radius: 10px; /* Round edges */
+  background: #888; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Round edges */
 }
 
 .scrollable::-webkit-scrollbar-thumb:hover {
-    background: #555; /* Color when hovered */
+  background: #555; /* Color when hovered */
 }
 
 @keyframes drop {
-    0% { top: -50%; }
-    100% { top: 110%; }
+  0% {
+    top: -50%;
+  }
+  100% {
+    top: 110%;
+  }
 }
 
 /* Button styles */
 .btn-primary {
-    background-color: #00ADB5;  /* Primary button color */
-    border: none;
+  background-color: #00adb5; /* Primary button color */
+  border: none;
 }
 
 .btn-primary:hover {
-    background-color: #009B9A;  /* Darker shade on hover */
+  background-color: #009b9a; /* Darker shade on hover */
 }
 
 .btn-success {
-    background-color: rgb(0, 173, 181);  /* Success button color */
-    border: none;
+  background-color: rgb(0, 173, 181); /* Success button color */
+  border: none;
 }
 
 .btn-success:hover {
-    background-color: rgb(0, 153, 158);  /* Darker shade on hover */
+  background-color: rgb(0, 153, 158); /* Darker shade on hover */
 }
