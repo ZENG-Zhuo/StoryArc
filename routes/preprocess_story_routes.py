@@ -33,7 +33,13 @@ def preprocess_story():
         return jsonify({"error": "Missing story description or story arc"}), 400
 
     try:
-        story_structure: StoryStructure = story_generator.gen_story_node(story_description, story_arc, num_endings)
+        # gen_story_node now returns a StoryStructure instance directly
+        story_structure: StoryStructure
+        
+        if (story_arc != "no-arc"):
+            story_structure = story_generator.gen_story_node(story_description, story_arc, num_endings)
+        else:
+            story_structure = story_generator.gen_story_node_no_arc(story_description, num_endings)
         result = story_structure.to_dict()
 
         # Save to static/{session_id}/preprocessed_story.json
